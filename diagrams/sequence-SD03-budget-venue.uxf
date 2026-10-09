@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>8</zoom_level>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>0</x>
+      <y>40</y>
+      <w>1688</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>SD03 - Budget/Catering Planning and Venue Research
+fontsize=18
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>0</x>
+      <y>728</y>
+      <w>1688</w>
+      <h>168</h>
+    </coordinates>
+    <panel_attributes>alt
+--
+Within budget
+transparency=100
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>8</x>
+      <y>824</y>
+      <w>288</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>else: Over budget / missing price data
+fontsize=12
+layer=3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>32</x>
+      <y>72</y>
+      <w>80</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>Event Planner
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>64</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>168</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningGUI_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>216</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>312</x>
+      <y>88</y>
+      <w>128</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningController_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>472</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningFacade_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>624</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>672</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>776</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningAgent_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>928</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:BudgetService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>976</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1080</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:CateringSearchTool_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1128</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1232</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:VenueSearchTool_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1280</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1384</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:PlacesAPIClient_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1432</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1536</x>
+      <y>88</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:GeminiAdapter_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1584</x>
+      <y>120</y>
+      <w>24</w>
+      <h>1576</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1948.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>64</x>
+      <y>152</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestBudgetPlan(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>216</x>
+      <y>192</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+planBudgetAndCatering(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>232</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+planBudgetAndCatering(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>272</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>312</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>344</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+planBudgetAndCatering(event)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>384</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+execute(location + attendance + dietary needs)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1128</x>
+      <y>424</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+searchPlaces(query)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1128</x>
+      <y>464</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+providers
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>504</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+ToolResult
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>536</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+generate(prompt)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;960.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>576</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+proposed budget/catering plan
+layer=3</panel_attributes>
+    <additional_attributes>960.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>616</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Budget
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>656</y>
+      <w>480</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+validateBudget(budget)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;580.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>696</y>
+      <w>480</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+validation issues
+layer=3</panel_attributes>
+    <additional_attributes>580.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>744</y>
+      <w>480</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+saveBudget(event, budget)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;580.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>784</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+budget
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>840</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+budget + warnings + alternatives
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>216</x>
+      <y>896</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+budget/catering result
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>64</x>
+      <y>936</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display result
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>64</x>
+      <y>968</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestVenueResearch(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>216</x>
+      <y>1008</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+researchVenues(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>1048</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+researchVenues(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>1088</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>1128</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>1160</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+researchVenues(event)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>1200</y>
+      <w>480</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+execute(location + capacity + budget)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;580.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1280</x>
+      <y>1240</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+searchPlaces(query)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1280</x>
+      <y>1280</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+place results
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>1320</y>
+      <w>480</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+ToolResult
+layer=3</panel_attributes>
+    <additional_attributes>580.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>1352</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+analyze(input)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;960.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>824</x>
+      <y>1392</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+ranked comparison
+layer=3</panel_attributes>
+    <additional_attributes>960.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>1432</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+List&lt;VenueOption&gt;
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>1472</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+venue options
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>216</x>
+      <y>1512</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+venue options
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>64</x>
+      <y>1544</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display comparison
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+</diagram>

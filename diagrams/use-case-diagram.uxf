@@ -1,0 +1,596 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>20</x>
+      <y>0</y>
+      <w>750</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>AI Event Planning Agent - Use-Case Diagram
+fontsize=18</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>300</x>
+      <y>50</y>
+      <w>860</w>
+      <h>1050</h>
+    </coordinates>
+    <panel_attributes>AI Event Planning Agent
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>40</x>
+      <y>120</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Event Planner
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>40</x>
+      <y>470</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Team Member
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>40</x>
+      <y>820</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Attendee
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>1290</x>
+      <y>120</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Gemini API
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>1290</x>
+      <y>470</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Places / Search Service
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>1290</x>
+      <y>820</y>
+      <w>130</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Weather Service
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>360</x>
+      <y>100</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC01
+Contribute and Fuse Ideas
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>780</x>
+      <y>100</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC02
+Generate Event Blueprints
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>360</x>
+      <y>290</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC03
+Assign Tasks and Deadlines
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>780</x>
+      <y>290</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC04
+Build Schedule and Detect Conflicts
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>360</x>
+      <y>480</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC05
+Plan Budget and Catering
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>780</x>
+      <y>480</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC06
+Research and Compare Venues
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>360</x>
+      <y>670</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC07
+Simulate What-If Scenario
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>780</x>
+      <y>670</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC08
+Update Plan and Generate Contingency
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>360</x>
+      <y>860</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC09
+Generate Communications and Answer Attendee FAQ
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>780</x>
+      <y>860</y>
+      <w>300</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>UC10
+Generate Post-Event Analysis
+layer=2</panel_attributes>
+    <additional_attributes />
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>128</y>
+      <w>214</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;202.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>128</x>
+      <y>158</y>
+      <w>244</w>
+      <h>324</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;312.0;12.0;292.0;212.0;292.0;212.0;12.0;232.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>158</y>
+      <w>634</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;42.0;32.0;42.0;32.0;52.0;602.0;52.0;602.0;12.0;622.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>214</w>
+      <h>134</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;182.0;12.0;182.0;122.0;202.0;122.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>348</y>
+      <w>214</w>
+      <h>164</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;152.0;32.0;152.0;32.0;12.0;202.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>128</x>
+      <y>208</y>
+      <w>664</w>
+      <h>114</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;32.0;632.0;32.0;632.0;102.0;652.0;102.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>214</w>
+      <h>324</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;312.0;202.0;312.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>634</w>
+      <h>324</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;42.0;602.0;42.0;602.0;312.0;622.0;312.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>214</w>
+      <h>514</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;42.0;12.0;42.0;502.0;202.0;502.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>128</x>
+      <y>208</y>
+      <w>664</w>
+      <h>494</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;232.0;632.0;232.0;632.0;482.0;652.0;482.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>214</w>
+      <h>704</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;52.0;12.0;52.0;692.0;202.0;692.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>888</y>
+      <w>214</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;202.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>158</x>
+      <y>188</y>
+      <w>634</w>
+      <h>704</h>
+    </coordinates>
+    <panel_attributes>lt=-
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;32.0;532.0;32.0;532.0;692.0;622.0;692.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>158</y>
+      <w>654</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>642.0;42.0;622.0;42.0;622.0;52.0;32.0;52.0;32.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>128</y>
+      <w>234</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>188</y>
+      <w>654</w>
+      <h>134</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>642.0;12.0;622.0;12.0;622.0;32.0;32.0;32.0;32.0;122.0;12.0;122.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>188</y>
+      <w>234</w>
+      <h>134</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;12.0;32.0;12.0;32.0;122.0;12.0;122.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>208</y>
+      <w>684</w>
+      <h>304</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>672.0;12.0;672.0;242.0;32.0;242.0;32.0;292.0;12.0;292.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>188</y>
+      <w>234</w>
+      <h>324</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;12.0;202.0;12.0;202.0;312.0;12.0;312.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>188</y>
+      <w>654</w>
+      <h>514</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>642.0;12.0;622.0;12.0;622.0;82.0;32.0;82.0;32.0;502.0;12.0;502.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>208</y>
+      <w>264</w>
+      <h>494</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>252.0;12.0;252.0;32.0;32.0;32.0;32.0;482.0;12.0;482.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>188</y>
+      <w>654</w>
+      <h>704</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>642.0;12.0;602.0;12.0;602.0;652.0;32.0;652.0;32.0;692.0;12.0;692.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>188</y>
+      <w>234</w>
+      <h>704</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+AI service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;12.0;192.0;12.0;192.0;692.0;12.0;692.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>538</y>
+      <w>684</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+external service
+layer=1</panel_attributes>
+    <additional_attributes>672.0;32.0;672.0;52.0;32.0;52.0;32.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>488</y>
+      <w>234</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+external service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1068</x>
+      <y>728</y>
+      <w>234</w>
+      <h>124</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+external service
+layer=1</panel_attributes>
+    <additional_attributes>222.0;112.0;202.0;112.0;202.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>108</y>
+      <w>144</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+may include
+layer=1</panel_attributes>
+    <additional_attributes>132.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>488</y>
+      <w>144</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+may include
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;132.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>678</y>
+      <w>144</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+may follow
+layer=1</panel_attributes>
+    <additional_attributes>132.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+</diagram>

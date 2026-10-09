@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>8</zoom_level>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>128</x>
+      <y>80</y>
+      <w>1384</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>SD02 - Smart Task Assignment and Schedule Conflict Detection
+fontsize=18
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>128</x>
+      <y>608</y>
+      <w>1384</w>
+      <h>168</h>
+    </coordinates>
+    <panel_attributes>alt
+--
+Valid assignments
+transparency=100
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>136</x>
+      <y>712</y>
+      <w>288</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>else: Missing availability / overloaded member
+fontsize=12
+layer=3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>128</x>
+      <y>1272</y>
+      <w>1384</w>
+      <h>168</h>
+    </coordinates>
+    <panel_attributes>alt
+--
+No conflicts
+transparency=100
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>136</x>
+      <y>1376</y>
+      <w>288</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>else: Conflicts found
+fontsize=12
+layer=3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>160</x>
+      <y>112</y>
+      <w>80</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>Event Planner
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>192</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>296</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningGUI_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>344</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>440</x>
+      <y>128</y>
+      <w>128</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningController_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>600</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningFacade_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>752</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>800</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>904</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningAgent_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>952</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1056</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:GeminiAdapter_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1104</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1208</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:TaskService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1256</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1360</x>
+      <y>128</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>_:ScheduleService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1408</x>
+      <y>160</y>
+      <w>24</w>
+      <h>1472</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;1816.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>192</x>
+      <y>192</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestTaskPlan(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>344</x>
+      <y>232</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+assignTasks(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>272</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+assignTasks(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>312</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>352</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>384</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+proposeTaskAssignments(event)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>952</x>
+      <y>424</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+generate(prompt)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>952</x>
+      <y>464</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+proposed assignments
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>504</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+List&lt;Task&gt;
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>544</y>
+      <w>632</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+validateAssignments(event, tasks)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;770.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>576</y>
+      <w>632</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+validation issues
+layer=3</panel_attributes>
+    <additional_attributes>770.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>632</y>
+      <w>632</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+saveAssignments(event, tasks)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;770.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>672</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+tasks
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>728</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+tasks + warnings
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>344</x>
+      <y>784</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+task plan
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>184</x>
+      <y>816</y>
+      <w>192</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display assignments and deadlines
+layer=3</panel_attributes>
+    <additional_attributes>210.0;18.0;20.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>192</x>
+      <y>856</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestSchedule(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>344</x>
+      <y>896</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+buildSchedule(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>936</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+buildSchedule(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>976</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1008</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1048</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+proposeSchedule(event)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>952</x>
+      <y>1088</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+generate(prompt)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>952</x>
+      <y>1128</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+proposed schedule
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1168</y>
+      <w>328</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Schedule
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1200</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+detectConflicts(schedule)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;960.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1240</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+conflict list
+layer=3</panel_attributes>
+    <additional_attributes>960.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>1296</y>
+      <w>784</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+saveSchedule(event, schedule)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;960.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>1336</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+schedule
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>496</x>
+      <y>1392</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+schedule + conflicts
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>344</x>
+      <y>1440</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+schedule result
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>192</x>
+      <y>1480</y>
+      <w>176</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display schedule / warnings
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+</diagram>

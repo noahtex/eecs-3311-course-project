@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>0</x>
+      <y>0</y>
+      <w>2490</w>
+      <h>34</h>
+    </coordinates>
+    <panel_attributes>SD04 - What-If Simulation, Adaptive Update, and Contingency Planning
+fontsize=18
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>0</x>
+      <y>1240</y>
+      <w>2490</w>
+      <h>432</h>
+    </coordinates>
+    <panel_attributes>opt
+--
+Weather-sensitive event
+transparency=100
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>0</x>
+      <y>1900</y>
+      <w>2490</w>
+      <h>192</h>
+    </coordinates>
+    <panel_attributes>alt
+--
+Change makes event infeasible
+transparency=100
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLActor</id>
+    <coordinates>
+      <x>40</x>
+      <y>40</y>
+      <w>100</w>
+      <h>105</h>
+    </coordinates>
+    <panel_attributes>Event Planner
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>80</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>210</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningGUI_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>390</x>
+      <y>60</y>
+      <w>160</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningController_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>460</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>590</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningFacade_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>780</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:EventService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>840</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>970</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:EventPlanningAgent_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1160</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:GeminiAdapter_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1220</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1350</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:WeatherTool_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1410</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1540</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:WeatherAPIClient_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1600</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1730</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:Event_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1790</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1920</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:TaskService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1980</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2110</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:ScheduleService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2170</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2300</x>
+      <y>60</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>_:BudgetService_
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2360</x>
+      <y>100</y>
+      <w>30</w>
+      <h>2130</h>
+    </coordinates>
+    <panel_attributes>lt=.
+layer=1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;2104.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>80</x>
+      <y>140</y>
+      <w>230</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestScenario(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>260</x>
+      <y>190</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+simulateScenario(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>20.0;18.0;210.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>240</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+simulateScenario(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>20.0;18.0;210.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>290</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>340</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>380</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+simulateScenario(event, change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>430</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+analyze(input)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>480</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+impact analysis / revised proposal
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>530</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+EventBlueprint (simulation only)
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>460</x>
+      <y>580</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+simulated blueprint
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>620</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+simulation
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>80</x>
+      <y>670</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display impacts without saving
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>70</x>
+      <y>720</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+requestPlanUpdate(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>20.0;18.0;210.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>770</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+updatePlan(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>460</x>
+      <y>820</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+updatePlan(eventId, change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>860</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getEvent(eventId)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>910</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+Event
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>960</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+updateEvent(event, change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>840</x>
+      <y>1010</y>
+      <w>980</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+updateDetails(change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;960.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1790</x>
+      <y>1060</y>
+      <w>290</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+notifyObservers(changedFields)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;10.0;70.0;10.0;70.0;30.0;10.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1770</x>
+      <y>1100</y>
+      <w>270</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+onEventChanged(event, changedFields)
+layer=3</panel_attributes>
+    <additional_attributes>30.0;18.0;220.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1790</x>
+      <y>1150</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+onEventChanged(event, changedFields)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1790</x>
+      <y>1200</y>
+      <w>600</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+onEventChanged(event, changedFields)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;580.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>1270</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+generateContingency(event)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>1310</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+execute(location + date)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1410</x>
+      <y>1360</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+getForecast(location, date)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1410</x>
+      <y>1410</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+forecast
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>1460</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+ToolResult
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>1510</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+generate(prompt)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;200.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1030</x>
+      <y>1550</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+contingency proposal
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>1600</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+ContingencyPlan
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>1670</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+simulateScenario(event, applied change)
+layer=3</panel_attributes>
+    <additional_attributes>10.0;18.0;390.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>1720</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+revised EventBlueprint
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>1760</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+updated plan + affected components
+layer=3</panel_attributes>
+    <additional_attributes>210.0;18.0;20.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>1810</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+updated plan
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>80</x>
+      <y>1860</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+display changes and contingency
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>1930</y>
+      <w>410</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+infeasibility explanation + alternatives
+layer=3</panel_attributes>
+    <additional_attributes>390.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>460</x>
+      <y>1970</y>
+      <w>220</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+alternatives
+layer=3</panel_attributes>
+    <additional_attributes>200.0;18.0;10.0;18.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>210</x>
+      <y>2020</y>
+      <w>340</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+warn user; do not silently apply unsafe assumptions
+layer=3</panel_attributes>
+    <additional_attributes>260.0;18.0;70.0;18.0</additional_attributes>
+  </element>
+</diagram>

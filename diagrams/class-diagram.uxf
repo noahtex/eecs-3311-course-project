@@ -1,0 +1,1560 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>1</zoom_level>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>465</x>
+      <y>434</y>
+      <w>90</w>
+      <h>3</h>
+    </coordinates>
+    <panel_attributes>AI Event Planning Agent - Class Diagram
+fontsize=18
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>464</x>
+      <y>438</y>
+      <w>44</w>
+      <h>118</h>
+    </coordinates>
+    <panel_attributes>Presentation / MVC View
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>510</x>
+      <y>438</y>
+      <w>46</w>
+      <h>118</h>
+    </coordinates>
+    <panel_attributes>Controller / Facade
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>558</x>
+      <y>438</y>
+      <w>45</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>System Services
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>606</x>
+      <y>435</y>
+      <w>190</w>
+      <h>163</h>
+    </coordinates>
+    <panel_attributes>Domain / MVC Model
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>798</x>
+      <y>438</y>
+      <w>150</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>AI / Agent Components
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>950</x>
+      <y>438</y>
+      <w>47</w>
+      <h>76</h>
+    </coordinates>
+    <panel_attributes>External Services
+--
+transparency=90
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>466</x>
+      <y>442</y>
+      <w>40</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>EventPlanningGUI
+--
+--
++submitIdeas(eventId String, ideas List)
++requestBlueprint(eventId: String, conceptId: String)
++requestTaskPlan(eventId: String)
++requestSchedule(eventId: String)
++requestBudgetPlan(eventId: String)
++requestVenueResearch(eventId: String)
++requestScenario(eventId: String, change: String)
++requestPlanUpdate(eventId: String, change: String)
++requestCommunication(eventId: String, channel: String)
++askQuestion(eventId: String, question: String)
++submitPostEventData(eventId: String, data: Map)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>466</x>
+      <y>477</y>
+      <w>40</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>EventPlanningCLI
+--
+--
++executeCommand(command: String, args: Map)
++displayResult(result: Object)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>512</x>
+      <y>442</y>
+      <w>42</w>
+      <h>29</h>
+    </coordinates>
+    <panel_attributes>EventPlanningController
+--
+-facade: EventPlanningFacade
+--
++synthesizeIdeas(eventId: String, ideas: List): List
++generateBlueprints(eventId: String, conceptId: String): List
++assignTasks(eventId: String): List
++buildSchedule(eventId: String): Schedule
++planBudgetAndCatering(eventId: String): Budget
++researchVenues(eventId: String): List
++simulateScenario(eventId: String, change: String): EventBlueprint
++updatePlan(eventId: String, change: String): EventBlueprint
++generateCommunication(eventId: String, channel: String): Communication
++answerFAQ(eventId: String, question: String): String
++analyzePostEvent(eventId: String, data: Map): PostEventReport
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>512</x>
+      <y>477</y>
+      <w>42</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>EventPlanningFacade
+--
+-eventService: EventService
+-taskService: TaskService
+-scheduleService: ScheduleService
+-budgetService: BudgetService
+-agent: EventPlanningAgent
+--
++synthesizeIdeas(eventId: String, ideas: List): List
++generateBlueprints(eventId: String, conceptId: String): List
++assignTasks(eventId: String): List
++buildSchedule(eventId: String): Schedule
++planBudgetAndCatering(eventId: String): Budget
++researchVenues(eventId: String): List
++simulateScenario(eventId: String, change: String): EventBlueprint
++updatePlan(eventId: String, change: String): EventBlueprint
++generateCommunication(eventId: String, channel: String): Communication
++answerFAQ(eventId: String, question: String): String
++analyzePostEvent(eventId: String, data: Map): PostEventReport
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>442</y>
+      <w>39</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+EventObserver
+--
+--
++onEventChanged(event: Event, changedFields: List)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>457</y>
+      <w>39</w>
+      <h>17</h>
+    </coordinates>
+    <panel_attributes>EventService
+--
+--
++createEvent(event: Event): Event
++getEvent(eventId: String): Event
++updateEvent(event: Event, change: String): Event
++saveConcepts(event: Event, concepts: List)
++saveBlueprints(event: Event, blueprints: List)
++recordPostEventData(event: Event, data: Map)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>480</y>
+      <w>39</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>TaskService
+--
+--
++saveAssignments(event: Event, tasks: List)
++validateAssignments(event: Event, tasks: List): List
++getTasks(event: Event): List
++onEventChanged(event: Event, changedFields: List)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>503</y>
+      <w>39</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>ScheduleService
+--
+--
++saveSchedule(event: Event, schedule: Schedule)
++detectConflicts(schedule: Schedule): List
++revalidateSchedule(event: Event)
++onEventChanged(event: Event, changedFields: List)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>561</x>
+      <y>526</y>
+      <w>39</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>BudgetService
+--
+--
++saveBudget(event: Event, budget: Budget)
++calculateRemaining(budget: Budget): double
++validateBudget(budget: Budget): List
++revalidateBudget(event: Event)
++onEventChanged(event: Event, changedFields: List)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>954</x>
+      <y>442</y>
+      <w>39</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>GeminiAPIClient
+--
+--
++generateContent(prompt: String): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>954</x>
+      <y>464</y>
+      <w>39</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>PlacesAPIClient
+--
+--
++searchPlaces(query: String): String
++getPlaceDetails(placeId: String): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>954</x>
+      <y>488</y>
+      <w>39</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>WeatherAPIClient
+--
+--
++getForecast(location: String, date: Date): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>609</x>
+      <y>442</y>
+      <w>31</w>
+      <h>22</h>
+    </coordinates>
+    <panel_attributes>User
+--
+-userId: String
+-name: String
+-email: String
+-skills: List
+-availability: List
+-preferences: String
+--
++submitIdea(text: String): EventIdea
++updateAvailability(slot: TimeSlot)
++viewTasks(): List
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>644</x>
+      <y>442</y>
+      <w>31</w>
+      <h>17</h>
+    </coordinates>
+    <panel_attributes>PlanningTeam
+--
+-teamId: String
+-name: String
+-members: List
+--
++addMember(user: User)
++removeMember(user: User)
++getMembers(): List
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>681</x>
+      <y>442</y>
+      <w>33</w>
+      <h>33</h>
+    </coordinates>
+    <panel_attributes>Event
+--
+-eventId: String
+-name: String
+-description: String
+-eventType: String
+-dateTime: DateTime
+-preferredLocation: String
+-expectedAttendance: int
+-goals: List
+-constraints: List
+-status: String
+-observers: List
+--
++updateDetails(change: String)
++addObserver(observer: EventObserver)
++removeObserver(observer: EventObserver)
++notifyObservers(changedFields: List)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>723</x>
+      <y>442</y>
+      <w>31</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>EventIdea
+--
+-ideaId: String
+-text: String
+-submittedAt: DateTime
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>723</x>
+      <y>458</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>EventConcept
+--
+-conceptId: String
+-title: String
+-summary: String
+-incorporatedIdeas: List
+-conflicts: List
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>644</x>
+      <y>484</y>
+      <w>31</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>EventBlueprint
+--
+-blueprintId: String
+-title: String
+-summary: String
+-venueRequirements: String
+-agenda: String
+-cateringPlan: String
+-checklist: List
+-assumptions: List
+--
++revise(change: String)
++validate(): boolean
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>609</x>
+      <y>484</y>
+      <w>31</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>Task
+--
+-taskId: String
+-title: String
+-description: String
+-deadline: DateTime
+-priority: String
+-status: String
+-assignedTo: User
+--
++assign(user: User)
++updateStatus(status: String)
++complete(): void
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>681</x>
+      <y>484</y>
+      <w>31</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>Budget
+--
+-budgetId: String
+-totalBudget: double
+-currency: String
+-items: List
+--
++addBudgetItem(item: BudgetItem)
++calculateAllocated(): double
++calculateRemaining(): double
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>681</x>
+      <y>516</y>
+      <w>31</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>BudgetItem
+--
+-itemId: String
+-name: String
+-category: String
+-allocatedAmount: double
+-spentAmount: double
+--
++updateAllocatedAmount(amount: double)
++recordExpense(amount: double)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>723</x>
+      <y>484</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>Schedule
+--
+-scheduleId: String
+-sessions: List
+--
++addSession(session: Session)
++removeSession(session: Session)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>723</x>
+      <y>516</y>
+      <w>31</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>Session
+--
+-sessionId: String
+-title: String
+-startTime: DateTime
+-endTime: DateTime
+-type: String
+-location: String
+--
++reschedule(start: DateTime, end: DateTime)
++assignSpeaker(speaker: Speaker)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>609</x>
+      <y>516</y>
+      <w>31</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>Speaker
+--
+-speakerId: String
+-name: String
+-email: String
+-topic: String
+-availability: List
+--
++checkAvailability(slot: TimeSlot): boolean
++assignSession(session: Session)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>609</x>
+      <y>540</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>TimeSlot
+--
+-date: Date
+-startTime: Time
+-endTime: Time
+--
++overlaps(other: TimeSlot): boolean
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>644</x>
+      <y>516</y>
+      <w>31</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>VenueOption
+--
+-venueId: String
+-name: String
+-address: String
+-capacity: int
+-estimatedCost: double
+-notes: String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>609</x>
+      <y>559</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>CateringOption
+--
+-cateringId: String
+-providerName: String
+-estimatedCost: double
+-serves: int
+-dietarySupport: List
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>681</x>
+      <y>559</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>ContingencyPlan
+--
+-contingencyId: String
+-risk: String
+-severity: String
+-backupPlan: String
+-triggerCondition: String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>723</x>
+      <y>559</y>
+      <w>31</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>Communication
+--
+-communicationId: String
+-channel: String
+-audience: String
+-subject: String
+-body: String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>644</x>
+      <y>559</y>
+      <w>31</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>PostEventReport
+--
+-reportId: String
+-actualAttendance: int
+-totalSpent: double
+-summary: String
+-successes: List
+-issues: List
+-lessons: List
+-recommendations: List
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>801</x>
+      <y>442</y>
+      <w>40</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>EventPlanningAgent
+--
+-model: AIModel
+-strategy: PlanningStrategy
+-tools: List
+-memory: Map
+--
++synthesizeIdeas(event: Event, ideas: List): List
++generateBlueprints(event: Event, concept: EventConcept): List
++proposeTaskAssignments(event: Event): List
++proposeSchedule(event: Event): Schedule
++planBudgetAndCatering(event: Event): Budget
++researchVenues(event: Event): List
++simulateScenario(event: Event, change: String): EventBlueprint
++generateContingency(event: Event): ContingencyPlan
++generateCommunication(event: Event, channel: String): Communication
++answerFAQ(event: Event, question: String): String
++analyzePostEvent(event: Event, data: Map): PostEventReport
++setPlanningStrategy(strategy: PlanningStrategy)
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>442</y>
+      <w>39</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+PlanningStrategy
+--
+--
++buildGuidance(event: Event): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>893</x>
+      <y>442</y>
+      <w>39</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>BudgetPriorityStrategy
+--
+--
++buildGuidance(event: Event): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>458</y>
+      <w>39</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>CommunityPriorityStrategy
+--
+--
++buildGuidance(event: Event): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>893</x>
+      <y>458</y>
+      <w>39</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>AttendancePriorityStrategy
+--
+--
++buildGuidance(event: Event): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>475</y>
+      <w>39</w>
+      <h>14</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+AIModel
+--
+--
++generate(prompt: String): String
++analyze(input: String): String
++summarize(input: String): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>893</x>
+      <y>475</y>
+      <w>39</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;adapter&gt;&gt;
+GeminiAdapter
+--
+-client: GeminiAPIClient
+--
++generate(prompt: String): String
++analyze(input: String): String
++summarize(input: String): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>499</y>
+      <w>39</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+AITool
+--
+--
++execute(query: String): ToolResult
++getDescription(): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>801</x>
+      <y>517</y>
+      <w>39</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>VenueSearchTool
+--
+-client: PlacesAPIClient
+--
++execute(query: String): ToolResult
++getDescription(): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>517</y>
+      <w>39</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>CateringSearchTool
+--
+-client: PlacesAPIClient
+--
++execute(query: String): ToolResult
++getDescription(): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>893</x>
+      <y>517</y>
+      <w>39</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>WeatherTool
+--
+-client: WeatherAPIClient
+--
++execute(query: String): ToolResult
++getDescription(): String
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>846</x>
+      <y>538</y>
+      <w>39</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>ToolResult
+--
+-source: String
+-content: String
+-retrievedAt: DateTime
+layer=2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>503</x>
+      <y>446</y>
+      <w>11</w>
+      <h>4</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+sends requests
+layer=1</panel_attributes>
+    <additional_attributes>22.0;22.0;82.0;22.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>462</y>
+      <w>15</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+sends commands
+layer=1</panel_attributes>
+    <additional_attributes>12.0;172.0;32.0;172.0;32.0;12.0;72.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>521</x>
+      <y>470</y>
+      <w>8</w>
+      <h>8</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+delegates
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;66.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>468</y>
+      <w>10</w>
+      <h>19</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;172.0;32.0;172.0;32.0;12.0;82.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>484</y>
+      <w>10</w>
+      <h>4</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;62.0;12.0;62.0;22.0;82.0;22.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>502</y>
+      <w>10</w>
+      <h>6</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;62.0;12.0;62.0;42.0;82.0;42.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>502</y>
+      <w>10</w>
+      <h>29</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;272.0;82.0;272.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>467</y>
+      <w>250</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;182.0;32.0;182.0;32.0;102.0;2462.0;102.0;2462.0;12.0;2482.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>638</x>
+      <y>444</y>
+      <w>10</w>
+      <h>5</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=1..*
+members
+layer=1</panel_attributes>
+    <additional_attributes>52.0;12.0;32.0;12.0;32.0;32.0;12.0;32.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>673</x>
+      <y>447</y>
+      <w>9</w>
+      <h>6</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=1
+m2=0..*
+plans
+layer=1</panel_attributes>
+    <additional_attributes>12.0;32.0;32.0;32.0;32.0;22.0;72.0;22.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>712</x>
+      <y>448</y>
+      <w>12</w>
+      <h>3</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;102.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>712</x>
+      <y>463</y>
+      <w>12</w>
+      <h>5</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>12.0;32.0;32.0;32.0;32.0;12.0;102.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>673</x>
+      <y>473</y>
+      <w>17</w>
+      <h>18</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>152.0;12.0;152.0;32.0;32.0;32.0;32.0;162.0;12.0;162.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>638</x>
+      <y>465</y>
+      <w>44</w>
+      <h>26</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>422.0;12.0;32.0;12.0;32.0;242.0;12.0;242.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>687</x>
+      <y>473</y>
+      <w>3</w>
+      <h>12</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=1
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;102.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>704</x>
+      <y>473</y>
+      <w>20</w>
+      <h>16</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=1
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;32.0;162.0;32.0;162.0;142.0;182.0;142.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>676</x>
+      <y>465</y>
+      <w>6</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>42.0;12.0;22.0;12.0;22.0;972.0;42.0;972.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>712</x>
+      <y>465</y>
+      <w>12</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;972.0;102.0;972.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>673</x>
+      <y>465</y>
+      <w>9</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..1
+layer=1</panel_attributes>
+    <additional_attributes>72.0;12.0;32.0;12.0;32.0;982.0;12.0;982.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>687</x>
+      <y>502</y>
+      <w>4</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;138.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>729</x>
+      <y>497</y>
+      <w>4</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;189.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>615</x>
+      <y>463</y>
+      <w>9</w>
+      <h>22</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..*
+m2=0..1
+assigned to
+layer=1</panel_attributes>
+    <additional_attributes>12.0;204.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>638</x>
+      <y>529</y>
+      <w>86</w>
+      <h>9</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..*
+m2=0..1
+speaker
+layer=1</panel_attributes>
+    <additional_attributes>842.0;22.0;822.0;22.0;822.0;72.0;32.0;72.0;32.0;12.0;12.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>615</x>
+      <y>534</y>
+      <w>9</w>
+      <h>7</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=1
+m2=0..*
+availability
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;58.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>507</y>
+      <w>8</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..*
+m2=0..*
+considers
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;87.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>638</x>
+      <y>500</y>
+      <w>10</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=0..*
+m2=0..*
+considers
+layer=1</panel_attributes>
+    <additional_attributes>52.0;12.0;32.0;12.0;32.0;622.0;12.0;622.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>460</y>
+      <w>85</w>
+      <h>7</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;52.0;802.0;52.0;802.0;12.0;832.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>488</y>
+      <w>12</w>
+      <h>4</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;22.0;32.0;22.0;32.0;12.0;102.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>493</y>
+      <w>126</w>
+      <h>22</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;202.0;1222.0;202.0;1222.0;12.0;1242.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>497</y>
+      <w>84</w>
+      <h>34</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;322.0;32.0;322.0;32.0;122.0;802.0;122.0;802.0;12.0;822.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>437</y>
+      <w>92</w>
+      <h>10</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=1
+m2=0..*
+notifies
+layer=1</panel_attributes>
+    <additional_attributes>902.0;42.0;902.0;22.0;32.0;22.0;32.0;72.0;12.0;72.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>557</x>
+      <y>448</y>
+      <w>5</w>
+      <h>37</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>32.0;12.0;12.0;12.0;12.0;352.0;32.0;352.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>598</x>
+      <y>448</y>
+      <w>5</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;32.0;12.0;32.0;582.0;12.0;582.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>557</x>
+      <y>448</y>
+      <w>5</w>
+      <h>83</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>32.0;12.0;12.0;12.0;12.0;812.0;32.0;812.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>839</x>
+      <y>448</y>
+      <w>8</w>
+      <h>4</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+uses
+layer=1</panel_attributes>
+    <additional_attributes>12.0;22.0;32.0;22.0;32.0;12.0;62.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>883</x>
+      <y>445</y>
+      <w>11</w>
+      <h>3</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;92.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>854</x>
+      <y>451</y>
+      <w>3</w>
+      <h>8</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;63.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>883</x>
+      <y>448</y>
+      <w>11</w>
+      <h>13</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;72.0;12.0;72.0;112.0;92.0;112.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>839</x>
+      <y>467</y>
+      <w>8</w>
+      <h>13</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+uses
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;42.0;12.0;42.0;112.0;62.0;112.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>883</x>
+      <y>477</y>
+      <w>11</w>
+      <h>3</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;92.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>930</x>
+      <y>448</y>
+      <w>25</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+adapts
+layer=1</panel_attributes>
+    <additional_attributes>12.0;302.0;32.0;302.0;32.0;12.0;232.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>829</x>
+      <y>477</y>
+      <w>20</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m1=1
+m2=0..*
+invokes
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;38.0;142.0;38.0;142.0;248.0;162.0;248.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>838</x>
+      <y>506</y>
+      <w>9</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>72.0;12.0;32.0;12.0;32.0;132.0;12.0;132.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>854</x>
+      <y>510</y>
+      <w>3</w>
+      <h>8</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;12.0;66.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>883</x>
+      <y>506</y>
+      <w>11</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+layer=1</panel_attributes>
+    <additional_attributes>12.0;12.0;72.0;12.0;72.0;132.0;92.0;132.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>838</x>
+      <y>471</y>
+      <w>117</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;482.0;32.0;482.0;32.0;432.0;1132.0;432.0;1132.0;12.0;1152.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>883</x>
+      <y>471</y>
+      <w>72</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;482.0;32.0;482.0;32.0;12.0;702.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>930</x>
+      <y>494</y>
+      <w>25</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+layer=1</panel_attributes>
+    <additional_attributes>12.0;252.0;32.0;252.0;32.0;12.0;232.0;12.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>842</x>
+      <y>506</y>
+      <w>6</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+returns
+layer=1</panel_attributes>
+    <additional_attributes>32.0;12.0;12.0;12.0;12.0;342.0;32.0;342.0</additional_attributes>
+  </element>
+</diagram>
