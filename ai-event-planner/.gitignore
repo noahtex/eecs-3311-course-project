@@ -1,0 +1,16 @@
+
+# Maven generated files
+target/
+
+# Local API credentials
+.env
+.env.*
+!.env.example
+config.local.json
+
+# VS Code local configuration
+.vscode/
+
+# Common temporary files
+*.log
+*.tmp
