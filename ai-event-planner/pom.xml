@@ -35,6 +35,14 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        <!-- JUnit 5 unit tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <!-- Build Plugins -->
@@ -46,6 +54,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.1</version>
+            </plugin>
+
+            <!-- Run JUnit 5 tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
             </plugin>
 
             <!-- JavaFX Application Launcher -->
