@@ -1,4 +1,3 @@
-
 package com.eventplanner.model;
 
 import java.time.LocalDateTime;
