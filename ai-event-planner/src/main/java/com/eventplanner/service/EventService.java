@@ -40,4 +40,8 @@ public class EventService {
     public List<Event> getAllEvents() {
         return List.copyOf(events);
     }
+
+    public boolean deleteEvent(String eventId) {
+        return events.removeIf(event -> event.getId().equals(eventId));
+    }
 }

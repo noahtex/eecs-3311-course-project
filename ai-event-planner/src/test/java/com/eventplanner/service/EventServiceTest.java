@@ -126,4 +126,35 @@ class EventServiceTest {
         return new Event(id, "Planning workshop", "Workshop", "Toronto",
                 LocalDateTime.of(2026, 12, 1, 10, 0), 30, 1500.0);
     }
+
+    @Test
+    void deleteExistingEvent() {
+        Event event = event("event-1");
+
+        service.createEvent(event);
+
+        assertTrue(service.deleteEvent("event-1"));
+        assertNull(service.getEvent("event-1"));
+        assertTrue(service.getAllEvents().isEmpty());
+    }
+
+    @Test
+    void deleteNonExistentEvent() {
+        assertFalse(service.deleteEvent("UNKNOWN"));
+    }
+
+    @Test
+    void deleteEventPreservesOtherEvents() {
+        Event first = event("event-1");
+        Event second = event("event-2");
+
+        service.createEvent(first);
+        service.createEvent(second);
+
+        assertTrue(service.deleteEvent("event-1"));
+
+        assertNull(service.getEvent("event-1"));
+        assertSame(second, service.getEvent("event-2"));
+        assertEquals(List.of(second), service.getAllEvents());
+    }
 }
