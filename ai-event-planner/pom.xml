@@ -49,6 +49,16 @@
     <build>
         <plugins>
 
+            <!-- Separate command-line launcher; leaves the JavaFX launcher unchanged. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>com.eventplanner.CLIApp</mainClass>
+                </configuration>
+            </plugin>
+
             <!-- Java Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -69,7 +79,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.eventplanner.App</mainClass>
+                    <mainClass>com.eventplanner/com.eventplanner.App</mainClass>
                 </configuration>
             </plugin>
 
