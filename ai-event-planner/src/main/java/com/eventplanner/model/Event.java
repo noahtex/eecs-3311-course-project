@@ -5,6 +5,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Event {
+    private final PlanningTeam planningTeam = new PlanningTeam(java.util.UUID.randomUUID().toString(), "Event team");
+    private LocalDateTime endDateTime;
+    private final java.util.Map<String, Speaker> speakers = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, List<TimeSlot>> resourceAvailability = new java.util.LinkedHashMap<>();
+    private List<Task> tasks = List.of();
+    private Schedule schedule;
+
+    public PlanningTeam getPlanningTeam() { return planningTeam; }
+    public LocalDateTime getEndDateTime() { return endDateTime; }
+    public void setEndDateTime(LocalDateTime end) { new TimeSlot(dateTime, end); endDateTime = end; }
+    public List<Speaker> getSpeakers() { return List.copyOf(speakers.values()); }
+    public void putSpeaker(Speaker speaker) { speakers.put(speaker.id(), speaker); }
+    public java.util.Map<String, List<TimeSlot>> getResourceAvailability() { return java.util.Map.copyOf(resourceAvailability); }
+    public void putResourceAvailability(String resource, List<TimeSlot> slots) {
+        resourceAvailability.put(PlanningValues.text(resource, "Resource ID").toLowerCase(java.util.Locale.ROOT), List.copyOf(slots));
+    }
+    public List<Task> getTasks() { return tasks; }
+    public void storeTasks(List<Task> approved) { tasks = List.copyOf(approved); }
+    public Schedule getSchedule() { return schedule; }
+    public void storeSchedule(Schedule approved) { schedule = java.util.Objects.requireNonNull(approved); }
 
     private String id;
     private String name;

@@ -18,7 +18,7 @@ public class PlanningTeam {
     }
 
     public void addMember(User user) {
-        if (user != null && !members.contains(user)) {
+        if (user != null && members.stream().noneMatch(member -> member.getId().equals(user.getId()))) {
             members.add(user);
         }
     }

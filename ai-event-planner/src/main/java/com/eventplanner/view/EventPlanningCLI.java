@@ -4,6 +4,8 @@ import com.eventplanner.controller.EventPlanningController;
 import com.eventplanner.model.Event;
 import com.eventplanner.model.EventConcept;
 import com.eventplanner.model.EventBlueprint;
+import com.eventplanner.model.*;
+import java.util.List;
 import com.eventplanner.ai.PlanningException;
 import com.eventplanner.strategy.PlanningStrategy;
 import java.io.PrintStream;
@@ -40,6 +42,7 @@ public class EventPlanningCLI {
                         output.println("ideas add <eventId> | ideas list <eventId> | ideas fuse <eventId> | concepts list <eventId>");
                         output.println("constraints add <eventId> | constraints list <eventId>");
                         output.println("blueprint generate <eventId> <conceptId> | blueprint list <eventId> | blueprint view <eventId> <blueprintId>");
+                        milestoneHelp();
                     } else if (command.equals("event create")) {
                         createEvent();
                     } else if (command.equals("event list")) {
@@ -96,6 +99,8 @@ public class EventPlanningCLI {
                                 + " | concept: " + blueprint.conceptId() + " | priority: " + blueprint.priority()));
                     } else if (parts.length == 4 && parts[0].equals("blueprint") && parts[1].equals("view")) {
                         displayBlueprint(controller.viewBlueprint(parts[2], parts[3]));
+                    } else if (milestoneCommand(parts)) {
+                        // F03/F04 command handled through the same controller.
                     } else {
                         output.println("Unknown command or invalid arguments. Type help for usage.");
                     }
@@ -107,6 +112,188 @@ public class EventPlanningCLI {
             output.println("\nEnd of input. Any unfinished creation or deletion was cancelled.");
         }
         output.println("Goodbye.");
+    }
+
+    private void milestoneHelp() {
+        output.println("team set <eventId> | team list <eventId> | speaker set <eventId> | resource set <eventId>");
+        output.println("tasks generate <eventId> | tasks list <eventId> | tasks assign <eventId> <taskId> | tasks status <eventId> <taskId>");
+        output.println("tasks approve <eventId> | tasks discard <eventId>");
+        output.println("schedule window <eventId> | schedule build <eventId> | schedule view <eventId> | schedule conflicts <eventId>");
+        output.println("schedule edit <eventId> <sessionId> | schedule approve <eventId> | schedule discard <eventId>");
+        output.println("Proposals and edits remain drafts until explicitly approved. Times use the event's local timezone.");
+    }
+
+    private boolean milestoneCommand(String[] parts) {
+        if (parts.length < 3 || parts.length > 4) return false;
+        String operation = parts[0] + " " + parts[1];
+        String eventId = parts[2];
+        if (parts.length == 4) {
+            switch (operation) {
+                case "tasks assign" -> {
+                    Task original = controller.listTasks(eventId).stream().filter(task -> task.id().equals(parts[3])).findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Unknown task ID."));
+                    controller.listMembers(eventId).forEach(user -> output.println(user.getId() + " | " + user.getName()));
+                    String user = read("Assigned member ID (blank = unassigned): ");
+                    LocalDateTime start = datePrompt("Work start (ISO local datetime; current " + original.workStart() + "): ");
+                    LocalDateTime due = datePrompt("Deadline (ISO local datetime; current " + original.deadline() + "): ");
+                    controller.reviseTask(eventId, parts[3], user.isBlank() ? null : user, start, due);
+                    showTasks(eventId);
+                    reviewTasks(eventId);
+                }
+                case "tasks status" -> {
+                    if (controller.listTasks(eventId).stream().noneMatch(task -> task.id().equals(parts[3])))
+                        throw new IllegalArgumentException("Unknown task ID.");
+                    Task.Status status = prompt("Status (TODO/IN_PROGRESS/DONE): ", value -> parseEnum(Task.Status.class, value));
+                    controller.updateTaskStatus(eventId, parts[3], status);
+                    showTasks(eventId);
+                    reviewTasks(eventId);
+                }
+                case "schedule edit" -> {
+                    Session original = controller.viewSchedule(eventId).sessions().stream().filter(session -> session.id().equals(parts[3]))
+                            .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown session ID."));
+                    output.println("Editing: " + original);
+                    String title = prompt("Title: ", this::nonBlank);
+                    Session.Kind kind = prompt("Kind (SETUP/ACTIVITY/BREAK/TEARDOWN): ", value -> parseEnum(Session.Kind.class, value));
+                    TimeSlot slot = slotPrompt();
+                    String speaker = read("Speaker ID (blank = no speaker): ");
+                    String space = prompt("Space resource ID: ", this::nonBlank);
+                    List<String> resources = csv(read("Other exclusive resource IDs (comma-separated; blank = none): "));
+                    controller.reviseSession(eventId, new Session(parts[3], title, kind, slot, speaker.isBlank() ? null : speaker, space, resources));
+                    showSchedule(eventId);
+                    reviewSchedule(eventId);
+                }
+                default -> { return false; }
+            }
+            return true;
+        }
+        switch (operation) {
+            case "team set" -> {
+                controller.viewEvent(eventId);
+                String id = prompt("Stable member ID (existing ID replaces profile): ", this::nonBlank);
+                String name = prompt("Member name: ", this::nonBlank);
+                List<String> skills = csv(read("Skills (comma-separated): "));
+                List<String> preferences = csv(read("Preferred tasks/topics (comma-separated): "));
+                List<TimeSlot> availability = availabilityPrompt();
+                double workload = hoursPrompt("Existing workload hours outside stored event tasks: ");
+                double capacity = hoursPrompt("Total capacity hours for the planning horizon: ");
+                User user = new User(id, name, "", "Planner");
+                user.configurePlanning(skills, preferences, availability, workload, capacity);
+                controller.configureMember(eventId, user);
+                output.println("Member profile saved. Revalidate existing task plans after profile changes.");
+            }
+            case "team list" -> controller.listMembers(eventId).forEach(user -> output.println(user.getId() + " | " + user.getName()
+                    + " | skills=" + user.getSkills() + " | preferences=" + user.getPreferences()
+                    + " | availability=" + user.getAvailability() + " | existing hours=" + user.getExistingWorkloadHours()
+                    + " | capacity hours=" + user.getCapacityHours()));
+            case "speaker set" -> {
+                controller.viewEvent(eventId);
+                String id = prompt("Stable speaker ID (existing ID replaces profile): ", this::nonBlank);
+                String name = prompt("Speaker name: ", this::nonBlank);
+                controller.configureSpeaker(eventId, new Speaker(id, name, availabilityPrompt()));
+                output.println("Speaker saved. Check schedule conflicts after availability changes.");
+            }
+            case "resource set" -> {
+                controller.viewEvent(eventId);
+                String resource = prompt("Space or exclusive resource ID (existing ID replaces availability): ", this::nonBlank);
+                controller.configureResource(eventId, resource, availabilityPrompt());
+                output.println("Resource saved. Check schedule conflicts after availability changes.");
+            }
+            case "tasks generate" -> {
+                controller.generateTasks(eventId);
+                showTasks(eventId);
+                reviewTasks(eventId);
+            }
+            case "tasks list" -> showTasks(eventId);
+            case "tasks approve" -> { controller.approveTasks(eventId); output.println("Task plan approved and stored."); }
+            case "tasks discard" -> { controller.discardTasks(eventId); output.println("Task draft discarded; approved plan retained."); }
+            case "schedule window" -> {
+                Event event = controller.viewEvent(eventId);
+                output.println("Event window starts " + event.getDateTime() + "; include setup and teardown within the window.");
+                controller.configureEventEnd(eventId, datePrompt("Event end (ISO local datetime): "));
+                output.println("Event end saved. Check existing schedule conflicts.");
+            }
+            case "schedule build" -> {
+                controller.buildSchedule(eventId);
+                showSchedule(eventId);
+                reviewSchedule(eventId);
+            }
+            case "schedule view" -> showSchedule(eventId);
+            case "schedule conflicts" -> showIssues(controller.scheduleConflicts(eventId));
+            case "schedule approve" -> { controller.approveSchedule(eventId); output.println("Schedule approved and stored."); }
+            case "schedule discard" -> { controller.discardSchedule(eventId); output.println("Schedule draft discarded; approved schedule retained."); }
+            default -> { return false; }
+        }
+        return true;
+    }
+
+    private void showTasks(String eventId) {
+        output.println(controller.hasTaskDraft(eventId) ? "DRAFT task plan (not approved)" : "APPROVED tasks");
+        var tasks = controller.listTasks(eventId);
+        if (tasks.isEmpty()) output.println("No tasks. Use tasks generate <eventId>.");
+        tasks.forEach(task -> output.println(task.id() + " | " + task.title() + " | " + task.description()
+                + " | assignee=" + (task.assignedUserId() == null ? "UNASSIGNED" : task.assignedUserId())
+                + " | start=" + task.workStart() + " | deadline=" + task.deadline() + " | hours=" + task.effortHours()
+                + " | skills=" + task.requiredSkills() + " | " + task.priority() + " | " + task.status()));
+        showIssues(controller.taskWarnings(eventId));
+    }
+    private void showSchedule(String eventId) {
+        Schedule schedule = controller.viewSchedule(eventId);
+        output.println((controller.hasScheduleDraft(eventId) ? "DRAFT" : "APPROVED") + " schedule " + schedule.id());
+        schedule.sessions().stream().sorted(java.util.Comparator.comparing(session -> session.slot().start()))
+                .forEach(session -> output.println(session.id() + " | " + session.title() + " | " + session.kind()
+                        + " | " + session.slot() + " | speaker=" + session.speakerId() + " | space=" + session.space()
+                        + " | resources=" + session.resources()));
+        showIssues(controller.scheduleConflicts(eventId));
+    }
+    private void showIssues(List<String> issues) {
+        if (issues.isEmpty()) output.println("No deterministic issues detected; review event constraints manually.");
+        issues.forEach(issue -> output.println("WARNING: " + issue));
+    }
+    private void reviewTasks(String eventId) {
+        if (read("Approve task draft? Type yes; otherwise keep draft for revision: ").equalsIgnoreCase("yes")) {
+            controller.approveTasks(eventId);
+            output.println("Task plan approved and stored.");
+        } else output.println("Draft retained. Use tasks assign/status, then tasks approve; or tasks discard.");
+    }
+    private void reviewSchedule(String eventId) {
+        if (read("Approve schedule draft? Type yes; otherwise keep draft for revision: ").equalsIgnoreCase("yes")) {
+            controller.approveSchedule(eventId);
+            output.println("Schedule approved and stored.");
+        } else output.println("Draft retained. Use schedule edit, then schedule approve; or schedule discard.");
+    }
+    private LocalDateTime datePrompt(String label) {
+        return prompt(label, value -> {
+            try { return LocalDateTime.parse(value); }
+            catch (DateTimeParseException ex) { throw new IllegalArgumentException("Enter an ISO local datetime, e.g. 2026-12-01T18:30."); }
+        });
+    }
+    private TimeSlot slotPrompt() {
+        while (true) {
+            LocalDateTime start = datePrompt("Availability/session start (ISO local datetime): ");
+            LocalDateTime end = datePrompt("Availability/session end (ISO local datetime): ");
+            try { return new TimeSlot(start, end); }
+            catch (IllegalArgumentException ex) { output.println("Error: " + ex.getMessage()); }
+        }
+    }
+    private List<TimeSlot> availabilityPrompt() {
+        var slots = new java.util.ArrayList<TimeSlot>();
+        while (read("Add an availability window? Type yes (none means UNKNOWN): ").equalsIgnoreCase("yes")) slots.add(slotPrompt());
+        return List.copyOf(slots);
+    }
+    private double hoursPrompt(String label) {
+        return prompt(label, value -> {
+            try { double hours = Double.parseDouble(value); if (Double.isFinite(hours) && hours >= 0) return hours; }
+            catch (NumberFormatException ignored) { }
+            throw new IllegalArgumentException("Enter finite non-negative hours.");
+        });
+    }
+    private List<String> csv(String value) {
+        return value.isBlank() ? List.of() : java.util.Arrays.stream(value.split(",")).map(String::strip)
+                .map(item -> PlanningValues.text(item, "List entry")).toList();
+    }
+    private <T extends Enum<T>> T parseEnum(Class<T> type, String value) {
+        try { return Enum.valueOf(type, value.toUpperCase(java.util.Locale.ROOT)); }
+        catch (IllegalArgumentException ex) { throw new IllegalArgumentException("Choose one of " + java.util.Arrays.toString(type.getEnumConstants())); }
     }
 
     private void createEvent() {

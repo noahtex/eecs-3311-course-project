@@ -4,6 +4,11 @@ An AI-powered event planning system designed to help university clubs and small 
 
 This project is being developed for **EECS 3311: Software Design** at York University.
 
+**F03/F04 implemented:** Smart task assignments and deadline tracking, plus agenda
+scheduling and deterministic conflict detection, are available through the CLI.
+See the [F03/F04 command and design guide](F03_F04_GUIDE.md) for every new command,
+interactive inputs, approval/revision workflows, tests and Stage 1 mappings.
+
 ## About the Project
 
 Planning events can be difficult for university clubs, especially when executive members are balancing school, work, and other responsibilities. Event planning also involves many connected decisions, such as budgeting, scheduling, venue selection, task assignments, catering, and managing unexpected changes.
@@ -213,12 +218,13 @@ existing `Event.addIdea(String)` and `getIdeas()` remain compatible while attrib
 `EventIdea` objects add source tracing. `AIModel` implements only the generation
 operation needed by F01/F02; analysis/summarization and external tools from the
 broader design are deferred. `constraints add/list` and `concepts list` are small
-CLI additions for supplying Stage 1 inputs and retrieving proposal IDs. No F03–F10
-workflows or new GUI screens are included.
+CLI additions for supplying Stage 1 inputs and retrieving proposal IDs. F03/F04
+extend these workflows as documented in [the milestone guide](F03_F04_GUIDE.md).
+F05–F10 workflows and new GUI screens remain deferred.
 
 The Stage 1 design context follows.
 
-**Stage 1 design completed; Stage 2 CLI and Milestone 2 F01/F02 implemented.**
+**Stage 1 design completed; Stage 2 CLI and F01–F04 implemented.**
 
 Stage 1 focuses on defining the system requirements, features, architecture, UML diagrams, design patterns, and AI-agent interactions before implementation begins.
 

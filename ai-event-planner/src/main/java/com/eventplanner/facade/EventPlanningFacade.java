@@ -4,6 +4,9 @@ import com.eventplanner.model.Event;
 import com.eventplanner.model.EventIdea;
 import com.eventplanner.model.EventConcept;
 import com.eventplanner.model.EventBlueprint;
+import com.eventplanner.model.*;
+import com.eventplanner.service.TaskService;
+import com.eventplanner.service.ScheduleService;
 import com.eventplanner.agent.EventPlanningAgent;
 import com.eventplanner.ai.GeminiAdapter;
 import com.eventplanner.ai.GeminiAPIClient;
@@ -18,6 +21,108 @@ import java.util.UUID;
 public class EventPlanningFacade {
     private final EventService eventService;
     private final EventPlanningAgent agent;
+    private final TaskService taskService = new TaskService();
+    private final ScheduleService scheduleService = new ScheduleService();
+    private final java.util.Map<Event, List<Task>> taskDrafts = new java.util.HashMap<>();
+    private final java.util.Map<Event, Schedule> scheduleDrafts = new java.util.HashMap<>();
+    private final java.util.Map<Event, List<String>> proposalWarnings = new java.util.HashMap<>();
+
+    private List<Task> otherTasks(Event event) {
+        return eventService.getAllEvents().stream().filter(other -> other != event)
+                .flatMap(other -> other.getTasks().stream()).toList();
+    }
+
+    public void configureMember(String eventId, User user) {
+        PlanningValues.text(user.getId(), "Member ID");
+        PlanningValues.text(user.getName(), "Member name");
+        var team = viewEvent(eventId).getPlanningTeam();
+        team.getMembers().stream().filter(member -> member.getId().equals(user.getId())).findFirst().ifPresent(team::removeMember);
+        team.addMember(user);
+    }
+    public List<User> listMembers(String eventId) { return viewEvent(eventId).getPlanningTeam().getMembers(); }
+    public void configureEventEnd(String eventId, LocalDateTime end) { viewEvent(eventId).setEndDateTime(end); }
+    public void configureSpeaker(String eventId, Speaker speaker) { viewEvent(eventId).putSpeaker(speaker); }
+    public void configureResource(String eventId, String resource, List<TimeSlot> slots) { viewEvent(eventId).putResourceAvailability(resource, slots); }
+
+    public List<Task> generateTasks(String eventId) {
+        Event event = viewEvent(eventId);
+        var proposed = agent.proposeTaskAssignments(event, otherTasks(event));
+        var issues = taskService.validateAssignments(event, proposed, otherTasks(event));
+        // Never keep an invented or unsuitable assignee. Preserve the original diagnostics for review.
+        var safe = proposed.stream().map(task -> task.assignedUserId() != null
+                && issues.stream().anyMatch(issue -> issue.startsWith("Task " + task.id() + " ("))
+                ? task.assign(null) : task).toList();
+        taskDrafts.put(event, safe);
+        proposalWarnings.put(event, issues);
+        return safe;
+    }
+    public boolean hasTaskDraft(String eventId) { return taskDrafts.containsKey(viewEvent(eventId)); }
+    public List<Task> listTasks(String eventId) {
+        Event event = viewEvent(eventId);
+        return taskDrafts.getOrDefault(event, event.getTasks());
+    }
+    public List<String> taskWarnings(String eventId) {
+        Event event = viewEvent(eventId);
+        var warnings = new java.util.ArrayList<>(proposalWarnings.getOrDefault(event, List.of()));
+        warnings.addAll(taskService.warnings(event, listTasks(eventId), otherTasks(event)));
+        return warnings.stream().distinct().toList();
+    }
+    public void approveTasks(String eventId) {
+        Event event = viewEvent(eventId);
+        if (!taskDrafts.containsKey(event)) throw new IllegalArgumentException("No task draft to approve.");
+        taskService.saveAssignments(event, taskDrafts.get(event), otherTasks(event));
+        taskDrafts.remove(event);
+        proposalWarnings.remove(event);
+    }
+    public void discardTasks(String eventId) {
+        Event event = viewEvent(eventId);
+        taskDrafts.remove(event);
+        proposalWarnings.remove(event);
+    }
+    public void reviseTask(String eventId, String taskId, String memberId, LocalDateTime start, LocalDateTime deadline) {
+        Event event = viewEvent(eventId);
+        var revised = replaceTask(listTasks(eventId), taskId, task -> task.revise(memberId, start, deadline));
+        taskDrafts.put(event, revised);
+        proposalWarnings.remove(event);
+    }
+    public void updateTaskStatus(String eventId, String taskId, Task.Status status) {
+        Event event = viewEvent(eventId);
+        var revised = replaceTask(listTasks(eventId), taskId, task -> task.withStatus(status));
+        // Status edits also require approval; invalid assignments cannot be silently stored.
+        taskDrafts.put(event, revised);
+    }
+    private List<Task> replaceTask(List<Task> tasks, String id, java.util.function.UnaryOperator<Task> update) {
+        if (tasks.stream().noneMatch(task -> task.id().equals(id))) throw new IllegalArgumentException("Unknown task ID.");
+        return tasks.stream().map(task -> task.id().equals(id) ? update.apply(task) : task).toList();
+    }
+    public Schedule buildSchedule(String eventId) {
+        Event event = viewEvent(eventId);
+        Schedule proposed = agent.proposeSchedule(event);
+        scheduleDrafts.put(event, proposed);
+        return proposed;
+    }
+    public boolean hasScheduleDraft(String eventId) { return scheduleDrafts.containsKey(viewEvent(eventId)); }
+    public Schedule viewSchedule(String eventId) {
+        Event event = viewEvent(eventId);
+        Schedule schedule = scheduleDrafts.getOrDefault(event, event.getSchedule());
+        if (schedule == null) throw new IllegalArgumentException("No schedule. Build one first.");
+        return schedule;
+    }
+    public List<String> scheduleConflicts(String eventId) { return scheduleService.detectConflicts(viewEvent(eventId), viewSchedule(eventId)); }
+    public void reviseSession(String eventId, Session revised) {
+        Schedule original = viewSchedule(eventId);
+        if (original.sessions().stream().noneMatch(session -> session.id().equals(revised.id())))
+            throw new IllegalArgumentException("Unknown session ID.");
+        scheduleDrafts.put(viewEvent(eventId), new Schedule(original.id(), original.sessions().stream()
+                .map(session -> session.id().equals(revised.id()) ? revised : session).toList()));
+    }
+    public void approveSchedule(String eventId) {
+        Event event = viewEvent(eventId);
+        if (!scheduleDrafts.containsKey(event)) throw new IllegalArgumentException("No schedule draft to approve.");
+        scheduleService.saveSchedule(event, scheduleDrafts.get(event));
+        scheduleDrafts.remove(event);
+    }
+    public void discardSchedule(String eventId) { scheduleDrafts.remove(viewEvent(eventId)); }
 
     public EventPlanningFacade(EventService eventService) {
         this(eventService, new EventPlanningAgent(new GeminiAdapter(new GeminiAPIClient())));
@@ -61,7 +166,15 @@ public class EventPlanningFacade {
     }
 
     public boolean deleteEvent(String id) {
-        return eventService.deleteEvent(required(id, "Event ID"));
+        String checked = required(id, "Event ID");
+        Event event = eventService.getEvent(checked);
+        boolean deleted = eventService.deleteEvent(checked);
+        if (deleted) {
+            taskDrafts.remove(event);
+            scheduleDrafts.remove(event);
+            proposalWarnings.remove(event);
+        }
+        return deleted;
     }
 
     public EventIdea addIdea(String eventId, String organizer, String idea) { return eventService.addIdea(eventId, organizer, idea); }
