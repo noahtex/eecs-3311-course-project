@@ -87,8 +87,7 @@ copy the ID from the creation response or event list for viewing and deletion.
 Deletion requires typing `yes`; other responses cancel it. End-of-input exits
 cleanly and cancels any unfinished operation.
 
-Events are stored **in memory only** and are lost when the CLI exits. There is no
-LLM or external API integration in this milestone.
+Events are stored **in memory only** and are lost when the CLI exits.
 
 MVC flow: `EventPlanningCLI` (view) → `EventPlanningController` →
 `EventPlanningFacade` → `EventService` → `Event` (model).
@@ -96,9 +95,130 @@ The controller delegates application operations, while the facade validates even
 details and provides a simple interface over the existing service. `CLIApp` wires
 one shared `EventService` instance for the entire session.
 
-The Stage 1 design context follows; the CLI above is the implemented Stage 2 scope.
+### Milestone 2: F01 idea fusion and F02 blueprints
 
-🚧 **Currently in the design stage.**
+The CLI now uses real Gemini calls for idea fusion and blueprint generation through
+the official `com.google.genai:google-genai:1.80.0` SDK. Jackson `2.18.11` parses
+structured JSON into immutable domain objects. JavaFX `App.java` and its launcher
+remain unchanged; `module-info.java` adds only the SDK and Jackson requirements.
+SDK setup follows the [official Google Gen AI Java SDK documentation](https://github.com/googleapis/java-genai).
+
+**Safe local configuration** (run from `ai-event-planner`):
+
+```powershell
+# Only when you do not already have .env:
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+Edit `.env` locally to set `GEMINI_API_KEY` and `GEMINI_MODEL`. The example contains
+no credential. `.env` is ignored by `ai-event-planner/.gitignore`; verify with
+`git check-ignore .env` from the project folder. Never commit or print your key.
+Alternatively, set these environment variables in your local terminal or IDE.
+Environment values take precedence over `.env`, including blank values. The loader
+reads `.env` from the current working directory, supports quoted `KEY=value` lines
+and optional `export`, and does no interpolation or shell execution. Use full-line
+comments rather than inline comments. The model defaults to `gemini-flash-latest`;
+choose an available model for your account, or a specific model ID for repeatability.
+No key is required for ordinary event commands. Credentials are loaded only on an
+AI request. Errors omit SDK response bodies and credentials.
+
+Launch and test:
+
+```powershell
+cd ai-event-planner  # from the repository root
+mvn test
+mvn compile exec:java
+```
+
+In the CLI, use this sequence (replace the angle-bracket placeholders with IDs
+printed by the preceding commands):
+
+```text
+event create
+ideas add <eventId>
+ideas add <eventId>
+ideas list <eventId>
+constraints add <eventId>
+constraints list <eventId>
+ideas fuse <eventId>
+concepts list <eventId>
+blueprint generate <eventId> <conceptId>
+blueprint list <eventId>
+blueprint view <eventId> <blueprintId>
+exit
+```
+
+`event create` prompts for the existing event fields. `ideas add` prompts for
+organizer name and idea. `constraints add` accepts an additional goal or constraint,
+such as "step-free access, two volunteers, no alcohol"; repeat to add more.
+`ideas fuse` displays at least two concepts, source idea IDs, themes, conflicts,
+compromises, and uncertainties. `blueprint generate` asks for `budget`, `community`,
+or `attendance`, then stores at least two alternatives. Blueprints include agenda,
+venue requirements, catering assumptions, resources, checklist, assumptions, and
+feasibility warnings. AI requests send the event details, constraints, organizer names,
+ideas, and selected concept to Gemini and consume your API quota.
+
+**Validation and uncertainty:** Planning requires a name, type, location, date/time,
+positive expected attendance, and a finite non-negative budget. Event creation still
+allows zero attendance for compatibility, but planning asks for a positive target.
+Missing ideas or invalid IDs fail before calling Gemini. Numeric budgets, proposed
+attendance, and capacity are checked in Java. Over-budget proposals, attendance
+mismatches, and capacity shortfalls are retained with explicit conflict warnings and
+suggested corrective action. Free-text constraints require manual review; the app
+does not claim to verify arbitrary natural-language rules. Unspecified goals,
+resources, accessibility and staffing remain unknown.
+
+Generated narratives and costs are **unverified planning proposals**, not venue
+availability, actual capacity, vendor prices, or weather facts. The prompt prohibits
+claiming those facts, and every result includes an application-added unverified
+warning that the model cannot omit. No external venue/catering/weather tools are
+implemented. Review proposals manually before acting on them.
+
+The parser requires non-blank fields, correctly typed lists and numeric values,
+valid source idea IDs, coverage of submitted ideas across concepts, and at least
+two alternatives with distinct titles. Invalid structured output is retried **once**
+with stricter instructions; persistent failure saves no partial results. API errors
+return a safe diagnostic to the command loop. Concept and blueprint IDs are generated
+by Java. Successful generations append to the same `Event` object, so prior results
+remain available within the session; they are snapshots of inputs at generation time.
+After changing ideas or constraints, generate new proposals and select the new IDs.
+All events, ideas, constraints, concepts, and blueprints disappear on exit.
+
+**Tests and optional real API check:** `mvn test` uses injected fake `AIModel`
+implementations and makes no Gemini requests. The real-API smoke test is skipped
+unless explicitly enabled. With local configuration present, run just that test:
+
+```powershell
+mvn test "-Dtest=GeminiSmokeTest" "-Dgemini.smoke=true"
+```
+
+This sends synthetic organizer ideas to the real API, performs F01 and F02, validates
+the parsed objects and their storage, and may consume two to four requests (one retry
+per operation). A missing credential causes an explicit failure when enabled.
+
+| Requirement/pattern | Implementation |
+| --- | --- |
+| F01 Collaborative Idea Fusion | `EventIdea`, `EventConcept`, `EventPlanningAgent.synthesizeIdeas` |
+| F02 Blueprint & Feasibility | `EventBlueprint`, `EventPlanningAgent.generateBlueprints`, deterministic numeric checks |
+| Adapter target | `AIModel.generate` is the agent-facing abstraction |
+| Adapter | `GeminiAdapter` implements `AIModel` and delegates to `GeminiAPIClient` |
+| Adaptee | `GeminiAPIClient` wraps the official SDK and local configuration |
+| Strategy context | `EventPlanningAgent.setPlanningStrategy` applies the selected guidance |
+| Concrete strategies | `BudgetPriorityStrategy` (spending/reserve), `CommunityPriorityStrategy` (inclusion/relationships), `AttendancePriorityStrategy` (reach/capacity) |
+| MVC and Facade | CLI → Controller → Facade → Agent/Services; `EventService` stores results in `Event` |
+
+**Stage 1 scope adjustments:** Concepts and blueprints are immutable records with
+typed lists rather than mutable UML placeholders; F07 revision is deferred. The
+existing `Event.addIdea(String)` and `getIdeas()` remain compatible while attributed
+`EventIdea` objects add source tracing. `AIModel` implements only the generation
+operation needed by F01/F02; analysis/summarization and external tools from the
+broader design are deferred. `constraints add/list` and `concepts list` are small
+CLI additions for supplying Stage 1 inputs and retrieving proposal IDs. No F03–F10
+workflows or new GUI screens are included.
+
+The Stage 1 design context follows.
+
+**Stage 1 design completed; Stage 2 CLI and Milestone 2 F01/F02 implemented.**
 
 Stage 1 focuses on defining the system requirements, features, architecture, UML diagrams, design patterns, and AI-agent interactions before implementation begins.
 

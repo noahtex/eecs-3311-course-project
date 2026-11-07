@@ -1,6 +1,10 @@
 package com.eventplanner.service;
 
 import com.eventplanner.model.Event;
+import com.eventplanner.model.EventIdea;
+import com.eventplanner.model.EventConcept;
+import com.eventplanner.model.EventBlueprint;
+import com.eventplanner.model.PlanningValues;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,5 +47,35 @@ public class EventService {
 
     public boolean deleteEvent(String eventId) {
         return events.removeIf(event -> event.getId().equals(eventId));
+    }
+
+    public Event requireEvent(String eventId) {
+        Event event = getEvent(PlanningValues.text(eventId, "Event ID"));
+        if (event == null) throw new IllegalArgumentException("No event found with ID: " + eventId);
+        return event;
+    }
+
+    public EventIdea addIdea(String eventId, String organizer, String idea) {
+        return requireEvent(eventId).addIdea(organizer, idea);
+    }
+
+    public List<EventIdea> listIdeas(String eventId) { return requireEvent(eventId).getOrganizerIdeas(); }
+    public void addConstraint(String eventId, String constraint) { requireEvent(eventId).addConstraint(constraint); }
+    public List<String> listConstraints(String eventId) { return requireEvent(eventId).getConstraints(); }
+    public void storeConcepts(String eventId, List<EventConcept> concepts) { requireEvent(eventId).addConcepts(concepts); }
+    public List<EventConcept> listConcepts(String eventId) { return requireEvent(eventId).getConcepts(); }
+    public void storeBlueprints(String eventId, List<EventBlueprint> blueprints) { requireEvent(eventId).addBlueprints(blueprints); }
+    public List<EventBlueprint> listBlueprints(String eventId) { return requireEvent(eventId).getBlueprints(); }
+
+    public EventConcept getConcept(String eventId, String conceptId) {
+        String id = PlanningValues.text(conceptId, "Concept ID");
+        return listConcepts(eventId).stream().filter(concept -> concept.id().equals(id)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No concept found for this event with ID: " + id));
+    }
+
+    public EventBlueprint getBlueprint(String eventId, String blueprintId) {
+        String id = PlanningValues.text(blueprintId, "Blueprint ID");
+        return listBlueprints(eventId).stream().filter(blueprint -> blueprint.id().equals(id)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No blueprint found for this event with ID: " + id));
     }
 }
