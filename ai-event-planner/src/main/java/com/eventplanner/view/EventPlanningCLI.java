@@ -43,6 +43,8 @@ public class EventPlanningCLI {
                         output.println("constraints add <eventId> | constraints list <eventId>");
                         output.println("blueprint generate <eventId> <conceptId> | blueprint list <eventId> | blueprint view <eventId> <blueprintId>");
                         milestoneHelp();
+                        output.println("budget generate/view/validate/approve/discard <eventId> | budget edit <eventId> <itemId>");
+                        output.println("venues research/list/compare/add <eventId>");
                     } else if (command.equals("event create")) {
                         createEvent();
                     } else if (command.equals("event list")) {
@@ -99,6 +101,8 @@ public class EventPlanningCLI {
                                 + " | concept: " + blueprint.conceptId() + " | priority: " + blueprint.priority()));
                     } else if (parts.length == 4 && parts[0].equals("blueprint") && parts[1].equals("view")) {
                         displayBlueprint(controller.viewBlueprint(parts[2], parts[3]));
+                    } else if (commercialCommand(parts)) {
+                        // F05/F06 use the shared controller/facade.
                     } else if (milestoneCommand(parts)) {
                         // F03/F04 command handled through the same controller.
                     } else {
@@ -121,6 +125,158 @@ public class EventPlanningCLI {
         output.println("schedule window <eventId> | schedule build <eventId> | schedule view <eventId> | schedule conflicts <eventId>");
         output.println("schedule edit <eventId> <sessionId> | schedule approve <eventId> | schedule discard <eventId>");
         output.println("Proposals and edits remain drafts until explicitly approved. Times use the event's local timezone.");
+    }
+
+    private boolean commercialCommand(String[] parts) {
+        if (parts.length == 4 && parts[0].equals("budget") && parts[1].equals("edit")) {
+            String eventId = parts[2];
+            BudgetItem original = controller.viewBudget(eventId).items().stream().filter(item -> item.id().equals(parts[3]))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown budget item ID."));
+            output.println("Current item: " + original);
+            String category = prompt("Category: ", this::nonBlank);
+            String description = prompt("Description: ", this::nonBlank);
+            var quantity = moneyPrompt("Quantity (positive): ", true);
+            var status = prompt("Price status (CONFIRMED/ESTIMATED/UNKNOWN): ", value -> parseEnum(BudgetItem.PriceStatus.class, value));
+            var cost = status == BudgetItem.PriceStatus.UNKNOWN ? null : moneyPrompt("Unit cost (non-negative): ", false);
+            String source = prompt("Quote reference/source or explicit estimate assumption: ", this::nonBlank);
+            controller.editBudget(eventId, new BudgetItem(original.id(), category, description, quantity, cost, status, source));
+            showBudget(eventId);
+            output.println("Edit retained as draft. Use budget approve to save or budget discard to cancel.");
+            return true;
+        }
+        if (parts.length != 3) return false;
+        String eventId = parts[2];
+        switch (parts[0] + " " + parts[1]) {
+            case "budget generate" -> {
+                controller.viewEvent(eventId);
+                String currency = prompt("Currency for the existing event spending limit (e.g. CAD): ", value -> {
+                    String normalized = value.toUpperCase(java.util.Locale.ROOT);
+                    java.util.Currency.getInstance(normalized); return normalized;
+                });
+                List<String> dietary = csv(read("Dietary requirements (comma-separated; blank = unspecified): "));
+                String catering = prompt("Catering needs (or explicitly none): ", this::nonBlank);
+                String priority = prompt("Priority (budget/community/attendance): ", value -> PlanningStrategy.fromName(value).name());
+                controller.configureBudgetNeeds(eventId, currency, dietary, catering);
+                controller.generateBudget(eventId, priority);
+                showBudget(eventId);
+                output.println("Proposal retained as draft. Review/edit, then budget approve.");
+            }
+            case "budget view" -> showBudget(eventId);
+            case "budget validate" -> { showBudget(eventId); }
+            case "budget approve" -> {
+                showBudget(eventId);
+                controller.approveBudget(eventId);
+                output.println("Budget approved and stored; estimates remain estimates, not confirmed prices.");
+            }
+            case "budget discard" -> { controller.discardBudget(eventId); output.println("Budget draft discarded; approved budget retained."); }
+            case "venues research" -> {
+                controller.viewEvent(eventId);
+                String query = prompt("Venue search (type, area, requirements): ", this::nonBlank);
+                var result = controller.researchVenues(eventId, query);
+                result.options().forEach(this::showVenue);
+                showIssues(result.warnings());
+                if (result.options().isEmpty()) output.println("No candidates returned. Revise search or use venues add.");
+                output.println("Candidates stored for research only; no venue is selected or booked.");
+            }
+            case "venues list" -> {
+                var venues = controller.listVenues(eventId);
+                if (venues.isEmpty()) output.println("No venues. Use venues research or venues add.");
+                venues.forEach(this::showVenue);
+            }
+            case "venues compare" -> {
+                controller.viewEvent(eventId);
+                if (controller.listVenues(eventId).isEmpty()) throw new IllegalArgumentException("No venues. Use venues research or venues add.");
+                boolean wheelchair = prompt("Require wheelchair-accessible entrance? (yes/no): ", this::yesNo);
+                List<String> equipment = csv(read("Required equipment (comma-separated; blank = unspecified): "));
+                controller.configureVenueNeeds(eventId, wheelchair, equipment);
+                controller.listVenues(eventId).forEach(this::showVenue);
+                var comparisons = controller.compareVenues(eventId);
+                int rank = 1;
+                for (var comparison : comparisons) {
+                    output.println("Rank " + rank++ + " | " + comparison.venueId() + " | known-fit score=" + comparison.knownFitScore());
+                    output.println("UNVERIFIED AI interpretation: " + comparison.analysis());
+                    displayItems("AI trade-offs (unverified)", comparison.tradeOffs());
+                    showIssues(comparison.warnings());
+                }
+                output.println("Ranking considers represented facts only; unknowns do not establish suitability. No booking made.");
+            }
+            case "venues add" -> addManualVenue(eventId);
+            default -> { return false; }
+        }
+        return true;
+    }
+
+    private void showBudget(String eventId) {
+        Budget budget = controller.viewBudget(eventId);
+        output.println((controller.hasBudgetDraft(eventId) ? "DRAFT" : "APPROVED") + " budget " + budget.id()
+                + " | currency=" + budget.currency() + " | priority=" + budget.priority());
+        budget.items().forEach(item -> output.println(item.id() + " | " + item.category() + " | " + item.description()
+                + " | quantity=" + item.quantity() + " | unit cost=" + (item.unitCost() == null ? "UNKNOWN" : item.unitCost())
+                + " | total=" + (item.total() == null ? "UNKNOWN" : item.total()) + " | " + item.priceStatus() + " | source=" + item.source()));
+        output.println("Known subtotal (includes estimates; excludes UNKNOWN amounts): " + controller.budgetTotal(eventId) + " " + budget.currency());
+        Event event = controller.viewEvent(eventId);
+        output.println("Unchanged event spending limit: " + event.getTotalBudget() + " " + event.getPlanningCurrency());
+        if (budget.currency().equals(event.getPlanningCurrency())) output.println("Provisional remaining / negative shortfall: " + controller.budgetRemaining(eventId));
+        budget.providers().forEach(this::showVenue);
+        budget.catering().forEach(option -> {
+            output.println("UNVERIFIED catering recommendation | provider=" + (option.providerId() == null ? "generic plan; no provider verified" : option.providerId())
+                    + " | " + option.recommendation());
+            displayItems("Dietary notes (confirm with provider)", option.dietaryNotes());
+        });
+        displayItems("Assumptions", budget.assumptions());
+        showIssues(controller.validateBudget(eventId));
+    }
+    private void showVenue(VenueOption venue) {
+        output.println("Venue/provider ID: " + venue.id() + " | " + venue.name() + " | address=" + venue.address());
+        output.println("Source: " + venue.source() + " | retrieved/entered=" + venue.retrievedAt() + " | attributes=" + venue.providerAttributes());
+        output.println("Capacity=" + venue.capacity() + " | rental cost=" + venue.rentalCost() + " " + venue.currency());
+        output.println("Wheelchair entrance=" + venue.wheelchairEntrance() + " | equipment=" + venue.equipment());
+        output.println("Event availability UNKNOWN. Provider-reported and planner-entered information require appropriate confirmation.");
+    }
+    private void addManualVenue(String eventId) {
+        Event event = controller.viewEvent(eventId);
+        String name = prompt("Venue name: ", this::nonBlank);
+        String address = prompt("Address/location: ", this::nonBlank);
+        String source = prompt("Source/reference for your information (e.g. quote or unverified note): ", this::nonBlank);
+        Evidence.Status status = prompt("Status of entered attributes (PLANNER_CONFIRMED/ESTIMATED): ", value -> {
+            var parsed = parseEnum(Evidence.Status.class, value);
+            if (parsed != Evidence.Status.PLANNER_CONFIRMED && parsed != Evidence.Status.ESTIMATED)
+                throw new IllegalArgumentException("Choose PLANNER_CONFIRMED or ESTIMATED; blank attributes remain UNKNOWN.");
+            return parsed;
+        });
+        Integer capacity = prompt("Capacity (blank = UNKNOWN): ", value -> {
+            if (value.isBlank()) return null;
+            try { int parsed = Integer.parseInt(value); if (parsed > 0) return parsed; } catch (NumberFormatException ignored) { }
+            throw new IllegalArgumentException("Enter a positive capacity or leave blank.");
+        });
+        java.math.BigDecimal cost = prompt("Total event rental cost in " + event.getPlanningCurrency() + " (blank = UNKNOWN): ", value ->
+                value.isBlank() ? null : parseMoney(value, false));
+        Boolean wheelchair = prompt("Wheelchair entrance (yes/no; blank = UNKNOWN): ", value -> value.isBlank() ? null : yesNo(value));
+        String equipmentInput = read("Known equipment (comma-separated; blank = UNKNOWN; type none for an explicitly empty list): ");
+        List<String> equipment = equipmentInput.isBlank() ? null : equipmentInput.equalsIgnoreCase("none") ? List.of() : csv(equipmentInput);
+        VenueOption venue = new VenueOption("manual:" + java.util.UUID.randomUUID(), name, address, "Manual planner entry: " + source,
+                java.time.Instant.now(), java.util.Map.of(), manualEvidence(capacity, status, source), manualEvidence(cost, status, source),
+                event.getPlanningCurrency(), manualEvidence(wheelchair, status, source), manualEvidence(equipment, status, source));
+        showVenue(venue);
+        if (read("Store this venue candidate? Type yes: ").equalsIgnoreCase("yes")) {
+            controller.addVenue(eventId, venue); output.println("Manual venue candidate stored; no booking made.");
+        } else output.println("Manual entry cancelled.");
+    }
+    private <T> Evidence<T> manualEvidence(T value, Evidence.Status status, String source) {
+        return value == null ? Evidence.unknown() : new Evidence<>(value, status, source);
+    }
+    private boolean yesNo(String value) {
+        if (value.equalsIgnoreCase("yes")) return true;
+        if (value.equalsIgnoreCase("no")) return false;
+        throw new IllegalArgumentException("Enter yes or no.");
+    }
+    private java.math.BigDecimal moneyPrompt(String label, boolean positive) { return prompt(label, value -> parseMoney(value, positive)); }
+    private java.math.BigDecimal parseMoney(String value, boolean positive) {
+        try {
+            var amount = new java.math.BigDecimal(value);
+            if (amount.signum() >= 0 && (!positive || amount.signum() > 0)) return amount;
+        } catch (NumberFormatException ignored) { }
+        throw new IllegalArgumentException(positive ? "Enter a positive quantity." : "Enter a non-negative decimal amount.");
     }
 
     private boolean milestoneCommand(String[] parts) {

@@ -1,4 +1,5 @@
 module com.eventplanner {
+    requires java.net.http;
     requires javafx.controls;
     requires javafx.fxml;
     requires transitive javafx.graphics;

@@ -5,6 +5,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Event {
+    private Budget budget;
+    private String planningCurrency = "CAD";
+    private List<String> dietaryRequirements = List.of();
+    private String cateringNeeds = "Not specified";
+    private boolean requiresWheelchairEntrance;
+    private List<String> requiredEquipment = List.of();
+    private final java.util.Map<String, VenueOption> venueOptions = new java.util.LinkedHashMap<>();
+    private List<VenueComparison> venueComparisons = List.of();
+    public Budget getBudget() { return budget; }
+    public void storeBudget(Budget approved) { budget = java.util.Objects.requireNonNull(approved); }
+    public String getPlanningCurrency() { return planningCurrency; }
+    public List<String> getDietaryRequirements() { return dietaryRequirements; }
+    public String getCateringNeeds() { return cateringNeeds; }
+    public boolean requiresWheelchairEntrance() { return requiresWheelchairEntrance; }
+    public List<String> getRequiredEquipment() { return requiredEquipment; }
+    public void configureBudgetNeeds(String currency, List<String> dietary, String catering) {
+        java.util.Currency.getInstance(currency);
+        var checkedDietary = PlanningValues.texts(dietary, "Dietary requirements", true);
+        var checkedCatering = PlanningValues.text(catering, "Catering needs");
+        planningCurrency = currency; dietaryRequirements = checkedDietary; cateringNeeds = checkedCatering;
+        venueComparisons = List.of();
+    }
+    public void configureVenueNeeds(boolean wheelchairEntrance, List<String> equipment) {
+        requiredEquipment = PlanningValues.texts(equipment, "Required equipment", true);
+        requiresWheelchairEntrance = wheelchairEntrance; venueComparisons = List.of();
+    }
+    public List<VenueOption> getVenueOptions() { return List.copyOf(venueOptions.values()); }
+    public void addVenueOptions(List<VenueOption> options) {
+        List.copyOf(options).forEach(option -> venueOptions.put(option.id(), option));
+        venueComparisons = List.of();
+    }
+    public List<VenueComparison> getVenueComparisons() { return venueComparisons; }
+    public void storeVenueComparisons(List<VenueComparison> comparisons) { venueComparisons = List.copyOf(comparisons); }
     private final PlanningTeam planningTeam = new PlanningTeam(java.util.UUID.randomUUID().toString(), "Event team");
     private LocalDateTime endDateTime;
     private final java.util.Map<String, Speaker> speakers = new java.util.LinkedHashMap<>();

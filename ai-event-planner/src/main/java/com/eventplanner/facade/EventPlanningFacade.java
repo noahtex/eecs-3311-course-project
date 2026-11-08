@@ -7,6 +7,8 @@ import com.eventplanner.model.EventBlueprint;
 import com.eventplanner.model.*;
 import com.eventplanner.service.TaskService;
 import com.eventplanner.service.ScheduleService;
+import com.eventplanner.service.BudgetService;
+import com.eventplanner.tool.*;
 import com.eventplanner.agent.EventPlanningAgent;
 import com.eventplanner.ai.GeminiAdapter;
 import com.eventplanner.ai.GeminiAPIClient;
@@ -21,6 +23,66 @@ import java.util.UUID;
 public class EventPlanningFacade {
     private final EventService eventService;
     private final EventPlanningAgent agent;
+    private final AITool venueTool;
+    private final AITool cateringTool;
+    private final BudgetService budgetService = new BudgetService();
+    private final java.util.Map<Event, Budget> budgetDrafts = new java.util.HashMap<>();
+
+    public void configureBudgetNeeds(String eventId, String currency, List<String> dietary, String catering) {
+        viewEvent(eventId).configureBudgetNeeds(currency, dietary, catering);
+    }
+    public void configureVenueNeeds(String eventId, boolean wheelchair, List<String> equipment) {
+        viewEvent(eventId).configureVenueNeeds(wheelchair, equipment);
+    }
+    public Budget generateBudget(String eventId, String priority) {
+        Event event = viewEvent(eventId);
+        agent.setPlanningStrategy(PlanningStrategy.fromName(priority));
+        ToolResult providers;
+        try {
+            providers = cateringTool.execute("catering providers near " + event.getLocation() + " for " + event.getType()
+                    + " " + String.join(" ", event.getDietaryRequirements()));
+        } catch (com.eventplanner.ai.PlanningException ex) {
+            providers = new ToolResult("Unavailable", List.of(), List.of(
+                    "Live catering-provider discovery unavailable. Configure GOOGLE_PLACES_API_KEY / Places API (New), billing and network, or confirm providers manually. Recommendations and all costs remain unverified estimates."));
+        }
+        Budget proposed = agent.planBudgetAndCatering(event, providers);
+        budgetDrafts.put(event, proposed);
+        return proposed;
+    }
+    public boolean hasBudgetDraft(String eventId) { return budgetDrafts.containsKey(viewEvent(eventId)); }
+    public Budget viewBudget(String eventId) {
+        Event event = viewEvent(eventId);
+        Budget budget = budgetDrafts.getOrDefault(event, event.getBudget());
+        if (budget == null) throw new IllegalArgumentException("No budget. Use budget generate first.");
+        return budget;
+    }
+    public void editBudget(String eventId, BudgetItem replacement) {
+        budgetDrafts.put(viewEvent(eventId), budgetService.updateAllocation(viewBudget(eventId), replacement));
+    }
+    public List<String> validateBudget(String eventId) { return budgetService.validateBudget(viewEvent(eventId), viewBudget(eventId)); }
+    public java.math.BigDecimal budgetTotal(String eventId) { return budgetService.totalExpenses(viewBudget(eventId)); }
+    public java.math.BigDecimal budgetRemaining(String eventId) { return budgetService.remainingBudget(viewEvent(eventId), viewBudget(eventId)); }
+    public void approveBudget(String eventId) {
+        Event event = viewEvent(eventId);
+        if (!budgetDrafts.containsKey(event)) throw new IllegalArgumentException("No budget draft to approve.");
+        budgetService.saveBudget(event, budgetDrafts.get(event));
+        budgetDrafts.remove(event);
+    }
+    public void discardBudget(String eventId) { budgetDrafts.remove(viewEvent(eventId)); }
+    public ToolResult researchVenues(String eventId, String query) {
+        Event event = viewEvent(eventId);
+        ToolResult result = venueTool.execute(required(query, "Venue search query") + " near " + event.getLocation());
+        event.addVenueOptions(result.options());
+        return result;
+    }
+    public List<VenueOption> listVenues(String eventId) { return viewEvent(eventId).getVenueOptions(); }
+    public void addVenue(String eventId, VenueOption venue) { viewEvent(eventId).addVenueOptions(List.of(Objects.requireNonNull(venue))); }
+    public List<VenueComparison> compareVenues(String eventId) {
+        Event event = viewEvent(eventId);
+        var comparisons = agent.compareVenues(event);
+        event.storeVenueComparisons(comparisons);
+        return comparisons;
+    }
     private final TaskService taskService = new TaskService();
     private final ScheduleService scheduleService = new ScheduleService();
     private final java.util.Map<Event, List<Task>> taskDrafts = new java.util.HashMap<>();
@@ -129,8 +191,14 @@ public class EventPlanningFacade {
     }
 
     public EventPlanningFacade(EventService eventService, EventPlanningAgent agent) {
+        this(eventService, agent, new VenueSearchTool(new PlacesAPIClient()), new CateringSearchTool(new PlacesAPIClient()));
+    }
+
+    public EventPlanningFacade(EventService eventService, EventPlanningAgent agent, AITool venueTool, AITool cateringTool) {
         this.eventService = Objects.requireNonNull(eventService, "Event service is required.");
         this.agent = Objects.requireNonNull(agent, "Planning agent is required.");
+        this.venueTool = Objects.requireNonNull(venueTool);
+        this.cateringTool = Objects.requireNonNull(cateringTool);
     }
 
     public Event createEvent(String name, String type, String location,
@@ -173,6 +241,7 @@ public class EventPlanningFacade {
             taskDrafts.remove(event);
             scheduleDrafts.remove(event);
             proposalWarnings.remove(event);
+            budgetDrafts.remove(event);
         }
         return deleted;
     }

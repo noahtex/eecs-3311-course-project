@@ -14,6 +14,22 @@ import java.util.Objects;
 public class EventPlanningController {
     private final EventPlanningFacade facade;
 
+    public void configureBudgetNeeds(String eventId, String currency, List<String> dietary, String catering) { facade.configureBudgetNeeds(eventId, currency, dietary, catering); }
+    public void configureVenueNeeds(String eventId, boolean wheelchair, List<String> equipment) { facade.configureVenueNeeds(eventId, wheelchair, equipment); }
+    public Budget generateBudget(String eventId, String priority) { return facade.generateBudget(eventId, priority); }
+    public boolean hasBudgetDraft(String eventId) { return facade.hasBudgetDraft(eventId); }
+    public Budget viewBudget(String eventId) { return facade.viewBudget(eventId); }
+    public void editBudget(String eventId, BudgetItem replacement) { facade.editBudget(eventId, replacement); }
+    public List<String> validateBudget(String eventId) { return facade.validateBudget(eventId); }
+    public java.math.BigDecimal budgetTotal(String eventId) { return facade.budgetTotal(eventId); }
+    public java.math.BigDecimal budgetRemaining(String eventId) { return facade.budgetRemaining(eventId); }
+    public void approveBudget(String eventId) { facade.approveBudget(eventId); }
+    public void discardBudget(String eventId) { facade.discardBudget(eventId); }
+    public ToolResult researchVenues(String eventId, String query) { return facade.researchVenues(eventId, query); }
+    public List<VenueOption> listVenues(String eventId) { return facade.listVenues(eventId); }
+    public void addVenue(String eventId, VenueOption venue) { facade.addVenue(eventId, venue); }
+    public List<VenueComparison> compareVenues(String eventId) { return facade.compareVenues(eventId); }
+
     public void configureMember(String eventId, User user) { facade.configureMember(eventId, user); }
     public List<User> listMembers(String eventId) { return facade.listMembers(eventId); }
     public void configureEventEnd(String eventId, LocalDateTime end) { facade.configureEventEnd(eventId, end); }

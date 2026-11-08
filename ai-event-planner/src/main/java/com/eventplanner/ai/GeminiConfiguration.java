@@ -22,6 +22,12 @@ public final class GeminiConfiguration {
     }
 
     public static GeminiConfiguration load(Path path, Map<String, String> environment) {
+        Map<String, String> local = readLocalValues(path);
+        return fromValues(path, environment, local);
+    }
+
+    /** Shared .env parser for external tools; does not require or expose Gemini credentials. */
+    public static Map<String, String> readLocalValues(Path path) {
         Map<String, String> local = new HashMap<>();
         if (Files.exists(path)) {
             try {
@@ -44,6 +50,10 @@ public final class GeminiConfiguration {
                 throw new PlanningException("Cannot read local .env configuration. Check file access.");
             }
         }
+        return Map.copyOf(local);
+    }
+
+    private static GeminiConfiguration fromValues(Path path, Map<String, String> environment, Map<String, String> local) {
         String apiKey = environment.getOrDefault("GEMINI_API_KEY", local.getOrDefault("GEMINI_API_KEY", "")).strip();
         String model = environment.getOrDefault("GEMINI_MODEL", local.getOrDefault("GEMINI_MODEL", "gemini-flash-latest")).strip();
         if (apiKey.isBlank() || apiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {

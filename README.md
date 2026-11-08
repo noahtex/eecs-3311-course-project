@@ -4,6 +4,11 @@ An AI-powered event planning system designed to help university clubs and small 
 
 This project is being developed for **EECS 3311: Software Design** at York University.
 
+**Milestone 3B (F05/F06) implemented:** Budget/catering proposals, deterministic
+budget calculations and approval, real Google Places venue/provider discovery,
+manual venue entry and comparison are available through the CLI. See the
+[F05/F06 command, configuration and design guide](F05_F06_GUIDE.md).
+
 **F03/F04 implemented:** Smart task assignments and deadline tracking, plus agenda
 scheduling and deterministic conflict detection, are available through the CLI.
 See the [F03/F04 command and design guide](F03_F04_GUIDE.md) for every new command,
@@ -216,15 +221,16 @@ per operation). A missing credential causes an explicit failure when enabled.
 typed lists rather than mutable UML placeholders; F07 revision is deferred. The
 existing `Event.addIdea(String)` and `getIdeas()` remain compatible while attributed
 `EventIdea` objects add source tracing. `AIModel` implements only the generation
-operation needed by F01/F02; analysis/summarization and external tools from the
-broader design are deferred. `constraints add/list` and `concepts list` are small
+operation used for planning and structured venue analysis; separate summarization
+operations remain deferred. `constraints add/list` and `concepts list` are small
 CLI additions for supplying Stage 1 inputs and retrieving proposal IDs. F03/F04
 extend these workflows as documented in [the milestone guide](F03_F04_GUIDE.md).
-F05–F10 workflows and new GUI screens remain deferred.
+F05/F06 add the budget and Places-tool workflows described in
+[the Milestone 3B guide](F05_F06_GUIDE.md). F07–F10 workflows and new GUI screens remain deferred.
 
 The Stage 1 design context follows.
 
-**Stage 1 design completed; Stage 2 CLI and F01–F04 implemented.**
+**Stage 1 design completed; Stage 2 CLI and F01–F06 implemented.**
 
 Stage 1 focuses on defining the system requirements, features, architecture, UML diagrams, design patterns, and AI-agent interactions before implementation begins.
 
