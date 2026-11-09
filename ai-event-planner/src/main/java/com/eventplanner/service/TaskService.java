@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /** Deterministic assignment validation. Capacity is total active hours for this planning horizon. */
-public final class TaskService {
+public final class TaskService implements EventObserver {
+    @Override public void onEventChanged(Event event, Set<String> fields) { if(!event.getTasks().isEmpty()) { var issues=new ArrayList<String>(); issues.add("Tasks require review after changes: "+fields); issues.addAll(warnings(event,event.getTasks(),List.of())); event.flagReview("tasks",issues); } }
     private final Clock clock;
     public TaskService() { this(Clock.systemDefaultZone()); }
     public TaskService(Clock clock) { this.clock = Objects.requireNonNull(clock); }

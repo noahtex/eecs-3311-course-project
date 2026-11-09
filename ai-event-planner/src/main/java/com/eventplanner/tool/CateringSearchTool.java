@@ -8,4 +8,5 @@ public final class CateringSearchTool implements AITool {
     private final PlacesAPIClient client;
     public CateringSearchTool(PlacesAPIClient client) { this.client = Objects.requireNonNull(client); }
     @Override public ToolResult execute(String query) { return client.searchPlaces(query); }
+    @Override public void close() { client.close(); }
 }

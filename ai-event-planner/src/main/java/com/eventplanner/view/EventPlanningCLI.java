@@ -43,6 +43,7 @@ public class EventPlanningCLI {
                         output.println("constraints add <eventId> | constraints list <eventId>");
                         output.println("blueprint generate <eventId> <conceptId> | blueprint list <eventId> | blueprint view <eventId> <blueprintId>");
                         milestoneHelp();
+                        adaptiveHelp();
                         output.println("budget generate/view/validate/approve/discard <eventId> | budget edit <eventId> <itemId>");
                         output.println("venues research/list/compare/add <eventId>");
                     } else if (command.equals("event create")) {
@@ -101,6 +102,8 @@ public class EventPlanningCLI {
                                 + " | concept: " + blueprint.conceptId() + " | priority: " + blueprint.priority()));
                     } else if (parts.length == 4 && parts[0].equals("blueprint") && parts[1].equals("view")) {
                         displayBlueprint(controller.viewBlueprint(parts[2], parts[3]));
+                    } else if (adaptiveCommand(parts)) {
+                        // F07-F10 workflows.
                     } else if (commercialCommand(parts)) {
                         // F05/F06 use the shared controller/facade.
                     } else if (milestoneCommand(parts)) {
@@ -116,6 +119,100 @@ public class EventPlanningCLI {
             output.println("\nEnd of input. Any unfinished creation or deletion was cancelled.");
         }
         output.println("Goodbye.");
+    }
+
+    private void adaptiveHelp() {
+        output.println("scenario simulate <eventId>");
+        output.println("plan update/changes/confirm/discard <eventId> (update accepts natural language or structured fields)");
+        output.println("contingency generate/list <eventId>");
+        output.println("communication generate/list <eventId> | communication view/edit/approve <eventId> <communicationId>");
+        output.println("faq ask <eventId> | postevent record/analyze/view <eventId>");
+    }
+    private boolean adaptiveCommand(String[] parts) {
+        if(parts.length<3 || parts.length>4) return false;
+        String op=parts[0]+" "+parts[1], id=parts[2];
+        if(parts.length==4) {
+            switch(op) {
+                case "communication view" -> output.println(controller.viewCommunication(id,parts[3]));
+                case "communication edit" -> {
+                    output.println(controller.viewCommunication(id,parts[3]));
+                    output.println(controller.editCommunication(id,parts[3],prompt("Replacement draft text (verify factual claims): ",this::nonBlank)));
+                }
+                case "communication approve" -> {
+                    output.println(controller.viewCommunication(id,parts[3]));
+                    if(read("Approve this exact text after verifying facts? Type yes: ").equalsIgnoreCase("yes")) output.println(controller.approveCommunication(id,parts[3]));
+                    else output.println("Approval cancelled; draft retained.");
+                }
+                default -> { return false; }
+            }
+            return true;
+        }
+        switch(op) {
+            case "scenario simulate" -> {
+                controller.viewEvent(id);
+                var result=controller.simulateScenario(id,prompt("Hypothetical change: ",this::nonBlank));
+                output.println("SIMULATION ONLY - original event unchanged");
+                output.println("Before: "+result.proposedChanges().before());
+                output.println("After: "+result.snapshot().changeFields());
+                output.println("Spending-limit difference (not cost estimate): "+result.budgetLimitDifference());
+                output.println("Estimated expense difference (attendance-proportional assumption; null = unknown): "+result.estimatedExpenseDifference());
+                displayItems("Affected components",result.affectedComponents()); displayItems("Scheduling/resources",result.implications());
+                displayItems("Warnings",result.warnings()); displayItems("Adjustments",result.recommendations());
+            }
+            case "plan update" -> {
+                controller.viewEvent(id);
+                if(read("Input mode (structured/natural): ").equalsIgnoreCase("structured")) {
+                    var fields=new java.util.LinkedHashMap<String,String>();
+                    for(String field:List.of("name","type","location","dateTime","endDateTime","attendance","budget","unavailableSpeaker")) {
+                        String value=read(field+" (blank = unchanged): "); if(!value.isBlank()) fields.put(field,value);
+                    }
+                    output.println(controller.proposeChangeFields(id,fields));
+                } else output.println(controller.proposeChange(id,prompt("Proposed change: ",this::nonBlank)));
+                output.println("Affected components: tasks, schedule, budget and communications need review. Use plan confirm or plan discard.");
+            }
+            case "plan changes" -> { output.println(controller.pendingChanges(id)); output.println(controller.viewEvent(id).getReviewWarnings()); }
+            case "plan confirm" -> {
+                output.println(controller.pendingChanges(id));
+                boolean yes=read("Apply these event changes? Type yes; otherwise cancel: ").equalsIgnoreCase("yes");
+                controller.confirmChange(id,yes);
+                output.println(yes?"Event updated; approved plans retained for review.":"Changes cancelled.");
+                output.println(controller.viewEvent(id).getReviewWarnings());
+            }
+            case "plan discard" -> { controller.confirmChange(id,false); output.println("Changes cancelled."); }
+            case "contingency generate" -> { controller.viewEvent(id); output.println(controller.generateContingency(id,prompt("Risk (speaker cancellation, bad weather, venue issue, catering delay...): ",this::nonBlank))); }
+            case "contingency list" -> controller.listContingencies(id).forEach(output::println);
+            case "communication generate" -> {
+                controller.viewEvent(id);
+                var channel=prompt("Channel (EMAIL/INSTAGRAM/WHATSAPP): ",v->parseEnum(Communication.Channel.class,v));
+                output.println(controller.generateCommunication(id,channel,prompt("Tone: ",this::nonBlank)));
+                output.println("Draft only. View/edit text, then communication approve.");
+            }
+            case "communication list" -> controller.listCommunications(id).forEach(output::println);
+            case "faq ask" -> { controller.viewEvent(id); output.println(controller.askFaq(id,prompt("Attendee question: ",this::nonBlank))); }
+            case "postevent record" -> {
+                Event event=controller.viewEvent(id); event.getTasks().forEach(t->output.println(t.id()+" | "+t.title()));
+                Integer attendance=prompt("Actual attendance (blank = unknown): ",v->{ if(v.isBlank()) return null; try { int n=Integer.parseInt(v); if(n>=0)return n; } catch(NumberFormatException ignored) {} throw new IllegalArgumentException("Enter non-negative integer or blank."); });
+                var expenses=prompt("Actual total expenses in "+event.getPlanningCurrency()+" (blank = unknown): ",v->v.isBlank()?null:parseMoney(v,false));
+                var completed=csv(read("Completed approved task IDs (comma-separated): "));
+                var unfinished=csv(read("Unfinished approved task IDs (comma-separated): "));
+                var organizer=feedback("Organizer feedback"); var attendee=feedback("Attendee feedback"); var problems=feedback("Problems encountered");
+                var data=new PostEventData(attendance,expenses,completed,unfinished,organizer,attendee,problems);
+                output.println(data);
+                if(read("Save these recorded outcomes? Type yes: ").equalsIgnoreCase("yes")) { controller.recordPostEvent(id,data); output.println("Outcomes saved."); }
+                else output.println("Recording cancelled.");
+            }
+            case "postevent analyze" -> output.println(controller.analyzePostEvent(id));
+            case "postevent view" -> {
+                var reports=controller.viewPostEventReports(id);
+                if(reports.isEmpty()) output.println("No completed reports."); reports.forEach(output::println);
+            }
+            default -> { return false; }
+        }
+        return true;
+    }
+    private List<String> feedback(String label) {
+        var entries=new java.util.ArrayList<String>();
+        while(true) { String value=read(label+" (one entry; blank finishes): "); if(value.isBlank()) return List.copyOf(entries); entries.add(value); }
     }
 
     private void milestoneHelp() {

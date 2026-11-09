@@ -5,6 +5,78 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Event {
+    private final java.util.Set<EventObserver> observers = new java.util.LinkedHashSet<>();
+    private final java.util.Map<String,List<String>> reviewWarnings = new java.util.LinkedHashMap<>();
+    private final List<ContingencyPlan> contingencies = new ArrayList<>();
+    private final java.util.Map<String,Communication> communications = new java.util.LinkedHashMap<>();
+    private PostEventData postEventData;
+    private final List<PostEventReport> reports = new ArrayList<>();
+    public void addObserver(EventObserver observer) { observers.add(java.util.Objects.requireNonNull(observer)); }
+    public void flagReview(String component, List<String> issues) { reviewWarnings.put(component,List.copyOf(issues)); }
+    public java.util.Map<String,List<String>> getReviewWarnings() { return java.util.Map.copyOf(reviewWarnings); }
+    public List<ContingencyPlan> getContingencies() { return List.copyOf(contingencies); }
+    public void addContingency(ContingencyPlan plan) { contingencies.add(plan); }
+    public List<Communication> getCommunications() { return List.copyOf(communications.values()); }
+    public void storeCommunication(Communication value) { communications.put(value.id(),value); }
+    public PostEventData getPostEventData() { return postEventData; }
+    public void storePostEventData(PostEventData data) { postEventData=java.util.Objects.requireNonNull(data); }
+    public List<PostEventReport> getReports() { return List.copyOf(reports); }
+    public void storeReport(PostEventReport report) { reports.add(report); }
+    public java.util.Map<String,String> changeFields() {
+        var values = new java.util.LinkedHashMap<String,String>();
+        values.put("name",name); values.put("type",type); values.put("location",location);
+        values.put("dateTime",dateTime.toString()); values.put("endDateTime",endDateTime==null?"":endDateTime.toString());
+        values.put("attendance",Integer.toString(expectedAttendance)); values.put("budget",Double.toString(totalBudget));
+        values.put("unavailableSpeaker", ""); return java.util.Map.copyOf(values);
+    }
+    /** Validate everything on an isolated candidate before atomic field assignment and notification. */
+    public void applyChanges(java.util.Map<String,String> changes) {
+        Event candidate = snapshot();
+        try { candidate.assignChanges(changes); }
+        catch(java.time.DateTimeException ex) { throw new IllegalArgumentException("Changed dates must be valid ISO local date/times."); }
+        name=candidate.name; type=candidate.type; location=candidate.location; dateTime=candidate.dateTime;
+        endDateTime=candidate.endDateTime; expectedAttendance=candidate.expectedAttendance; totalBudget=candidate.totalBudget;
+        speakers.clear(); candidate.speakers.forEach(speakers::put);
+        if(!communications.isEmpty()) {
+            communications.replaceAll((key,value)->value.edit(value.text()));
+            flagReview("communications",List.of("Event changed. Communications reverted to drafts; regenerate and verify facts."));
+        }
+        observers.forEach(observer -> observer.onEventChanged(this,java.util.Set.copyOf(changes.keySet())));
+    }
+    private void assignChanges(java.util.Map<String,String> changes) {
+        for(var entry: changes.entrySet()) {
+            String value=entry.getValue();
+            switch(entry.getKey()) {
+                case "name" -> name=PlanningValues.text(value,"Name");
+                case "type" -> type=PlanningValues.text(value,"Type");
+                case "location" -> location=PlanningValues.text(value,"Location");
+                case "dateTime" -> dateTime=LocalDateTime.parse(value);
+                case "endDateTime" -> endDateTime=LocalDateTime.parse(value);
+                case "attendance" -> { expectedAttendance=Integer.parseInt(value); if(expectedAttendance<0) throw new IllegalArgumentException("Attendance cannot be negative."); }
+                case "budget" -> { totalBudget=Double.parseDouble(value); if(!Double.isFinite(totalBudget)||totalBudget<0) throw new IllegalArgumentException("Invalid budget."); }
+                case "unavailableSpeaker" -> { if(speakers.remove(value)==null) throw new IllegalArgumentException("Unknown speaker ID."); }
+                default -> throw new IllegalArgumentException("Unsupported changed field: "+entry.getKey());
+            }
+        }
+        if(endDateTime!=null) new TimeSlot(dateTime,endDateTime);
+    }
+    /** Immutable value records can be shared; all mutable aggregate containers and users are copied. */
+    public Event snapshot() {
+        Event copy=new Event(id,name,type,location,dateTime,expectedAttendance,totalBudget);
+        copy.endDateTime=endDateTime; copy.budget=budget; copy.planningCurrency=planningCurrency;
+        copy.dietaryRequirements=dietaryRequirements; copy.cateringNeeds=cateringNeeds;
+        copy.requiresWheelchairEntrance=requiresWheelchairEntrance; copy.requiredEquipment=requiredEquipment;
+        copy.venueOptions.putAll(venueOptions); copy.venueComparisons=venueComparisons;
+        copy.speakers.putAll(speakers); copy.resourceAvailability.putAll(resourceAvailability);
+        copy.tasks=tasks; copy.schedule=schedule; copy.ideas.addAll(ideas); copy.constraints.addAll(constraints);
+        copy.concepts.addAll(concepts); copy.blueprints.addAll(blueprints);
+        for(User user: planningTeam.getMembers()) {
+            User member=new User(user.getId(),user.getName(),user.getEmail(),user.getRole());
+            member.configurePlanning(user.getSkills(),user.getPreferences(),user.getAvailability(),user.getExistingWorkloadHours(),user.getCapacityHours());
+            copy.planningTeam.addMember(member);
+        }
+        return copy;
+    }
     private Budget budget;
     private String planningCurrency = "CAD";
     private List<String> dietaryRequirements = List.of();

@@ -4,7 +4,8 @@ import com.eventplanner.model.*;
 import java.math.BigDecimal;
 import java.util.*;
 
-public final class BudgetService {
+public final class BudgetService implements EventObserver {
+    @Override public void onEventChanged(Event event, Set<String> fields) { if(event.getBudget()!=null) { var issues=new ArrayList<String>(); issues.add("Budget requires review after changes: "+fields); issues.addAll(validateBudget(event,event.getBudget())); event.flagReview("budget",issues); } }
     /** Known subtotal includes estimates; unknown items are separately warned, not valued at zero. */
     public BigDecimal totalExpenses(Budget budget) {
         return budget.items().stream().map(BudgetItem::total).filter(Objects::nonNull).reduce(new BigDecimal("0.00"), BigDecimal::add);

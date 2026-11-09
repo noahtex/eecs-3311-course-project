@@ -12,6 +12,22 @@ import java.util.Objects;
 
 /** UI-independent controller shared by application views. */
 public class EventPlanningController {
+    public PlanChange proposeChange(String eventId, String request) { return facade.proposeChange(eventId,request); }
+    public PlanChange proposeChangeFields(String eventId, java.util.Map<String,String> fields) { return facade.proposeChangeFields(eventId,fields); }
+    public PlanChange pendingChanges(String eventId) { return facade.pendingChanges(eventId); }
+    public void confirmChange(String eventId, boolean confirmed) { facade.confirmChange(eventId,confirmed); }
+    public ScenarioResult simulateScenario(String eventId, String request) { return facade.simulateScenario(eventId,request); }
+    public ContingencyPlan generateContingency(String eventId, String risk) { return facade.generateContingency(eventId,risk); }
+    public List<ContingencyPlan> listContingencies(String eventId) { return facade.listContingencies(eventId); }
+    public Communication generateCommunication(String eventId, Communication.Channel channel, String tone) { return facade.generateCommunication(eventId,channel,tone); }
+    public List<Communication> listCommunications(String eventId) { return facade.listCommunications(eventId); }
+    public Communication viewCommunication(String eventId, String id) { return facade.viewCommunication(eventId,id); }
+    public Communication editCommunication(String eventId, String id, String body) { return facade.editCommunication(eventId,id,body); }
+    public Communication approveCommunication(String eventId, String id) { return facade.approveCommunication(eventId,id); }
+    public String askFaq(String eventId, String question) { return facade.askFaq(eventId,question); }
+    public void recordPostEvent(String eventId, PostEventData data) { facade.recordPostEvent(eventId,data); }
+    public PostEventReport analyzePostEvent(String eventId) { return facade.analyzePostEvent(eventId); }
+    public List<PostEventReport> viewPostEventReports(String eventId) { return facade.viewPostEventReports(eventId); }
     private final EventPlanningFacade facade;
 
     public void configureBudgetNeeds(String eventId, String currency, List<String> dietary, String catering) { facade.configureBudgetNeeds(eventId, currency, dietary, catering); }

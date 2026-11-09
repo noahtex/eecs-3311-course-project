@@ -18,12 +18,13 @@ class GeminiSmokeTest {
         var service = new EventService();
         var event = PlanningFixtures.event();
         service.createEvent(event);
-        var facade = new EventPlanningFacade(service, new EventPlanningAgent(new GeminiAdapter(new GeminiAPIClient())));
+        try (var facade = new EventPlanningFacade(service, new EventPlanningAgent(new GeminiAdapter(new GeminiAPIClient())))) {
         var concepts = facade.fuseIdeas(event.getId());
         assertTrue(concepts.size() >= 2);
         var blueprints = facade.generateBlueprints(event.getId(), concepts.get(0).id(), "budget");
         assertTrue(blueprints.size() >= 2);
         assertEquals(blueprints, event.getBlueprints());
         assertTrue(blueprints.get(0).feasibilityWarnings().contains(EventPlanningAgent.UNVERIFIED));
+        }
     }
 }

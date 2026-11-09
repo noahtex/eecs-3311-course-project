@@ -20,7 +20,36 @@ import java.util.Objects;
 import java.util.UUID;
 
 /** Application operations and validation over the existing event service. */
-public class EventPlanningFacade {
+public class EventPlanningFacade implements AutoCloseable {
+    private boolean closed;
+    /** Release every owned network resource, even if another resource's close fails. */
+    @Override public synchronized void close() {
+        if (closed) return;
+        closed = true;
+        try (agent; venueTool; cateringTool) {
+            // Reverse construction order: tools first, then the agent/model.
+        }
+    }
+    private final com.eventplanner.service.AdaptivePlanningService adaptive;
+    private Event observed(String id) {
+        Event event=viewEvent(id); event.addObserver(taskService); event.addObserver(scheduleService); event.addObserver(budgetService); return event;
+    }
+    public PlanChange proposeChange(String eventId, String request) { return adaptive.propose(observed(eventId),request); }
+    public PlanChange proposeChangeFields(String eventId, java.util.Map<String,String> fields) { return adaptive.proposeFields(observed(eventId),fields); }
+    public PlanChange pendingChanges(String eventId) { return adaptive.changes(viewEvent(eventId)); }
+    public void confirmChange(String eventId, boolean confirmed) { adaptive.confirm(observed(eventId),confirmed); }
+    public ScenarioResult simulateScenario(String eventId, String request) { return adaptive.simulate(viewEvent(eventId),request); }
+    public ContingencyPlan generateContingency(String eventId, String risk) { return adaptive.contingency(viewEvent(eventId),risk); }
+    public List<ContingencyPlan> listContingencies(String eventId) { return viewEvent(eventId).getContingencies(); }
+    public Communication generateCommunication(String eventId, Communication.Channel channel, String tone) { return adaptive.communication(viewEvent(eventId),channel,tone); }
+    public List<Communication> listCommunications(String eventId) { return viewEvent(eventId).getCommunications(); }
+    public Communication viewCommunication(String eventId, String id) { return adaptive.findCommunication(viewEvent(eventId),id); }
+    public Communication editCommunication(String eventId, String id, String body) { return adaptive.editCommunication(viewEvent(eventId),id,body); }
+    public Communication approveCommunication(String eventId, String id) { return adaptive.approveCommunication(viewEvent(eventId),id); }
+    public String askFaq(String eventId, String question) { return adaptive.faq(viewEvent(eventId),question); }
+    public void recordPostEvent(String eventId, PostEventData data) { adaptive.record(viewEvent(eventId),data); }
+    public PostEventReport analyzePostEvent(String eventId) { return adaptive.analyze(viewEvent(eventId)); }
+    public List<PostEventReport> viewPostEventReports(String eventId) { return viewEvent(eventId).getReports(); }
     private final EventService eventService;
     private final EventPlanningAgent agent;
     private final AITool venueTool;
@@ -197,6 +226,7 @@ public class EventPlanningFacade {
     public EventPlanningFacade(EventService eventService, EventPlanningAgent agent, AITool venueTool, AITool cateringTool) {
         this.eventService = Objects.requireNonNull(eventService, "Event service is required.");
         this.agent = Objects.requireNonNull(agent, "Planning agent is required.");
+        this.adaptive = new com.eventplanner.service.AdaptivePlanningService(agent);
         this.venueTool = Objects.requireNonNull(venueTool);
         this.cateringTool = Objects.requireNonNull(cateringTool);
     }

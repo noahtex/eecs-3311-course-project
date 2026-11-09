@@ -69,6 +69,22 @@
                 <configuration>
                     <mainClass>com.eventplanner.CLIApp</mainClass>
                 </configuration>
+                <executions>
+                    <!-- A real JVM exits normally when only library daemon threads remain.
+                         Keep exec:java's diagnostics enabled for callers who still use it. -->
+                    <execution>
+                        <id>cli</id>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <executable>${java.home}/bin/java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>com.eventplanner.CLIApp</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Java Compiler -->

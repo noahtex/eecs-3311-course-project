@@ -11,27 +11,46 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /** Real Places Text Search (New) transport. Never log request headers, keys or response bodies. */
-public final class PlacesAPIClient {
+public final class PlacesAPIClient implements AutoCloseable {
     public record Response(int status, String body) { }
-    @FunctionalInterface public interface Transport { Response send(HttpRequest request) throws IOException, InterruptedException; }
+    @FunctionalInterface public interface Transport extends AutoCloseable {
+        Response send(HttpRequest request) throws IOException, InterruptedException;
+        @Override default void close() { }
+    }
     private final Supplier<String> apiKey;
-    private final Transport transport;
+    private Transport transport;
+    private final Supplier<Transport> ownedTransportFactory;
+    private boolean closed;
     private final ObjectMapper json = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     public PlacesAPIClient() {
-        this(PlacesConfiguration::loadApiKey, request -> {
-            try (var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build()) {
+        this(PlacesConfiguration::loadApiKey, PlacesAPIClient::openTransport);
+    }
+    private static Transport openTransport() {
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
+        return new Transport() {
+            @Override public Response send(HttpRequest request) throws IOException, InterruptedException {
                 var response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 return new Response(response.statusCode(), response.body());
             }
-        });
+            @Override public void close() { client.close(); }
+        };
     }
+    /** Existing injected transports remain borrowed; their caller manages their lifetime. */
     public PlacesAPIClient(Supplier<String> apiKey, Transport transport) {
         this.apiKey = Objects.requireNonNull(apiKey); this.transport = Objects.requireNonNull(transport);
+        this.ownedTransportFactory = null;
     }
-    public ToolResult searchPlaces(String query) {
+    /** Factory-created transports are owned and opened only after valid configuration is available. */
+    PlacesAPIClient(Supplier<String> apiKey, Supplier<Transport> ownedTransportFactory) {
+        this.apiKey = Objects.requireNonNull(apiKey);
+        this.ownedTransportFactory = Objects.requireNonNull(ownedTransportFactory);
+    }
+    public synchronized ToolResult searchPlaces(String query) {
+        if (closed) throw new PlanningException("Places client is closed. Start a new planning session.");
         query = PlanningValues.text(query, "Places query");
         String key = apiKey.get(); // Configuration errors are already actionable and sanitized.
         try {
+            if (transport == null) transport = Objects.requireNonNull(ownedTransportFactory.get());
             String body = json.createObjectNode().put("textQuery", query).put("pageSize", 10).toString();
             HttpRequest request = HttpRequest.newBuilder(URI.create("https://places.googleapis.com/v1/places:searchText"))
                     .timeout(Duration.ofSeconds(30)).header("Content-Type", "application/json")
@@ -49,6 +68,18 @@ public final class PlacesAPIClient {
         } catch (PlanningException ex) { throw ex;
         } catch (IOException | RuntimeException ex) {
             throw new PlanningException("Places request or response failed. Check network and provider availability; retry or use venues add.");
+        }
+    }
+    @Override public synchronized void close() {
+        if (closed) return;
+        closed = true;
+        Transport owned = transport;
+        transport = null;
+        if (ownedTransportFactory != null && owned != null) {
+            try { owned.close(); }
+            catch (RuntimeException ex) {
+                throw new PlanningException("Places client cleanup failed. Network resources may not have closed completely.");
+            }
         }
     }
     private ToolResult parse(String body) throws IOException {

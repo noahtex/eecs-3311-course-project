@@ -4,7 +4,8 @@ import com.eventplanner.model.*;
 import java.util.*;
 
 /** Resource IDs are case-insensitive, exclusive resources (including session spaces). */
-public final class ScheduleService {
+public final class ScheduleService implements EventObserver {
+    @Override public void onEventChanged(Event event, Set<String> fields) { if(event.getSchedule()!=null) { var issues=new ArrayList<String>(); issues.add("Schedule requires review after changes: "+fields); issues.addAll(detectConflicts(event,event.getSchedule())); event.flagReview("schedule",issues); } }
     private String key(String value) { return value.strip().toLowerCase(Locale.ROOT); }
     private Set<String> resources(Session session) {
         Set<String> result = new HashSet<>();

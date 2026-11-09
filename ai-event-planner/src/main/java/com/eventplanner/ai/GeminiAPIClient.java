@@ -6,16 +6,47 @@ import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.HttpOptions;
 
 /** Adaptee: owns the concrete official SDK interaction, not application planning logic. */
-public class GeminiAPIClient {
+public class GeminiAPIClient implements AutoCloseable {
     private static final System.Logger LOGGER = System.getLogger(GeminiAPIClient.class.getName());
+    /** Owned transport boundary, injectable without credentials or network access in lifecycle tests. */
+    interface Session extends AutoCloseable {
+        String generate(String prompt);
+        @Override void close();
+    }
 
-    public String generateContent(String prompt) {
-        // Load lazily so non-AI CLI commands remain usable without credentials.
+    private final java.util.function.Supplier<Session> sessionFactory;
+    private Session session;
+    private boolean closed;
+
+    public GeminiAPIClient() { this(GeminiAPIClient::openSession); }
+
+    GeminiAPIClient(java.util.function.Supplier<Session> sessionFactory) {
+        this.sessionFactory = java.util.Objects.requireNonNull(sessionFactory);
+    }
+
+    private static Session openSession() {
         GeminiConfiguration configuration = GeminiConfiguration.load();
-        try (Client client = Client.builder().apiKey(configuration.apiKey())
-                .httpOptions(HttpOptions.builder().timeout(60_000).build()).build()) {
-            var config = GenerateContentConfig.builder().responseMimeType("application/json").build();
-            String text = client.models.generateContent(configuration.model(), prompt, config).text();
+        Client client = Client.builder().apiKey(configuration.apiKey())
+                .httpOptions(HttpOptions.builder().timeout(60_000).build()).build();
+        return new Session() {
+            @Override public String generate(String prompt) {
+                var config = GenerateContentConfig.builder().responseMimeType("application/json").build();
+                return client.models.generateContent(configuration.model(), prompt, config).text();
+            }
+
+            @Override public void close() {
+                // The SDK owns dispatcher shutdown, connection-pool eviction and cache cleanup.
+                client.close();
+            }
+        };
+    }
+
+    public synchronized String generateContent(String prompt) {
+        if (closed) throw new PlanningException("Gemini client is closed. Start a new planning session.");
+        try {
+            // One lazily opened SDK client per application session; ordinary commands need no key.
+            if (session == null) session = sessionFactory.get();
+            String text = session.generate(prompt);
             if (text == null || text.isBlank()) {
                 throw new PlanningException("Gemini returned no text (possibly blocked). Try revising the ideas.");
             }
@@ -26,6 +57,21 @@ public class GeminiAPIClient {
             LOGGER.log(System.Logger.Level.WARNING, diagnostic(ex));
             // Do not attach the SDK cause: UI callers could expose its request/response data.
             throw new PlanningException("Gemini request failed. Check API credentials, model access, quota and network, then retry.");
+        }
+    }
+
+    @Override public synchronized void close() {
+        if (closed) return;
+        closed = true;
+        Session owned = session;
+        session = null;
+        if (owned != null) {
+            try {
+                owned.close();
+            } catch (RuntimeException ex) {
+                LOGGER.log(System.Logger.Level.WARNING, diagnostic(ex));
+                throw new PlanningException("Gemini client cleanup failed. Request resources may not have closed completely.");
+            }
         }
     }
 

@@ -7,5 +7,6 @@ module com.eventplanner {
     requires com.fasterxml.jackson.databind;
 
     opens com.eventplanner to javafx.fxml;
+    opens com.eventplanner.model to com.fasterxml.jackson.databind;
     exports com.eventplanner;
 }

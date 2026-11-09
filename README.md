@@ -82,11 +82,14 @@ Requires JDK 21 or newer and Maven. From the repository root:
 ```powershell
 cd ai-event-planner
 mvn test
-mvn compile exec:java
+mvn compile exec:exec@cli
 ```
 
 The CLI uses the separate `com.eventplanner.CLIApp` entry point. The existing
 JavaFX entry point remains available with `mvn javafx:run`.
+Use `exec:exec@cli` to launch a separate JVM with explicit application cleanup;
+[CLI lifecycle notes](CLI_LIFECYCLE.md) explain the Okio daemon warning that can
+still appear with the legacy in-process `exec:java` launcher.
 
 Commands: `help`, `event create`, `event list`, `event view <id>`,
 `event delete <id>`, and `exit`. Creation prompts for name, type, location,
@@ -137,7 +140,7 @@ Launch and test:
 ```powershell
 cd ai-event-planner  # from the repository root
 mvn test
-mvn compile exec:java
+mvn compile exec:exec@cli
 ```
 
 In the CLI, use this sequence (replace the angle-bracket placeholders with IDs
@@ -239,3 +242,6 @@ Stage 1 focuses on defining the system requirements, features, architecture, UML
 **Course:** EECS 3311 – Software Design  
 **Term:** Fall 2026  
 **Project:** Course Project – AI Agent-Based Software
+
+
+Milestone 4 (F07-F10) commands, architecture, approval boundaries and limitations: [MILESTONE4_GUIDE.md](MILESTONE4_GUIDE.md).
