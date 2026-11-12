@@ -29,7 +29,7 @@ public class EventPlanningCLI {
 
     public void run() {
         output.println("Event planner. Type help for commands.");
-        output.println("Events are stored in memory and lost when you exit.");
+        output.println("Storage: "+controller.storageDescription()+". Successful changes are saved by this store.");
         try {
             while (true) {
                 String command = read("planner> ");
@@ -111,7 +111,7 @@ public class EventPlanningCLI {
                     } else {
                         output.println("Unknown command or invalid arguments. Type help for usage.");
                     }
-                } catch (IllegalArgumentException | PlanningException ex) {
+                } catch (IllegalArgumentException | PlanningException | com.eventplanner.storage.StorageException ex) {
                     output.println("Error: " + ex.getMessage());
                 }
             }

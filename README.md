@@ -100,7 +100,10 @@ copy the ID from the creation response or event list for viewing and deletion.
 Deletion requires typing `yes`; other responses cancel it. End-of-input exits
 cleanly and cancels any unfinished operation.
 
-Events are stored **in memory only** and are lost when the CLI exits.
+Planit now saves GUI and CLI data automatically to a shared **local JSON store**.
+On Windows the default is `%LOCALAPPDATA%\Planit\planit.json`. Only one GUI or CLI
+session may open the store at a time. See the [persistence guide](PERSISTENCE_GUIDE.md)
+for directory overrides, saved draft/approval states, failure handling and recovery.
 
 MVC flow: `EventPlanningCLI` (view) → `EventPlanningController` →
 `EventPlanningFacade` → `EventService` → `Event` (model).

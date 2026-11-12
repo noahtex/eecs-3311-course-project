@@ -20,8 +20,8 @@ public final class GuiSession {
  public Event create(String name,String type,String location,String start,String end,String attendance,String budget) {
   var from=GuiInputs.date(start); var until=GuiInputs.date(end); new TimeSlot(from,until);
   int count=GuiInputs.integer(attendance); double amount=GuiInputs.number(budget);
-  Event event=controller.createEvent(name,type,location,from,count,amount);
-  controller.configureEventEnd(event.getId(),until); select(event.getId()); return event;
+  Event event=controller.createEventWithEnd(name,type,location,from,until,count,amount);
+  select(event.getId()); return event;
  }
  public void deleteActive() { controller.deleteEvent(activeId()); activeId=null; }
 }

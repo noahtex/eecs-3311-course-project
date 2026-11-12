@@ -2,7 +2,6 @@ package com.eventplanner;
 
 import com.eventplanner.controller.EventPlanningController;
 import com.eventplanner.facade.EventPlanningFacade;
-import com.eventplanner.service.EventService;
 import com.eventplanner.view.EventPlanningCLI;
 import java.util.Scanner;
 import java.io.PrintStream;
@@ -14,9 +13,8 @@ public final class CLIApp {
     private CLIApp() { }
 
     public static void main(String[] args) {
-        EventService service = new EventService();
-        EventPlanningFacade facade = new EventPlanningFacade(service);
-        run(facade, System.in, System.out);
+        try{run(EventPlanningFacade.persistent(), System.in, System.out);}
+        catch(com.eventplanner.storage.StorageException ex){System.err.println("Planit storage error: "+ex.getMessage());}
     }
 
     /** Close the owned scanner without closing Maven/IDE-owned console streams or terminals. */

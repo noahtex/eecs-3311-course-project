@@ -110,7 +110,7 @@ public class Event {
     }
     public List<VenueComparison> getVenueComparisons() { return venueComparisons; }
     public void storeVenueComparisons(List<VenueComparison> comparisons) { venueComparisons = List.copyOf(comparisons); }
-    private final PlanningTeam planningTeam = new PlanningTeam(java.util.UUID.randomUUID().toString(), "Event team");
+    private final PlanningTeam planningTeam;
     private LocalDateTime endDateTime;
     private final java.util.Map<String, Speaker> speakers = new java.util.LinkedHashMap<>();
     private final java.util.Map<String, List<TimeSlot>> resourceAvailability = new java.util.LinkedHashMap<>();
@@ -147,6 +147,12 @@ public class Event {
     public Event(String id, String name, String type,
             String location, LocalDateTime dateTime,
             int expectedAttendance, double totalBudget) {
+        this(id,name,type,location,dateTime,expectedAttendance,totalBudget,new PlanningTeam(java.util.UUID.randomUUID().toString(),"Event team"));
+    }
+
+    /** Restore an existing team identity; observers are deliberately not part of stored data. */
+    public Event(String id,String name,String type,String location,LocalDateTime dateTime,int expectedAttendance,double totalBudget,PlanningTeam team) {
+        this.planningTeam = java.util.Objects.requireNonNull(team);
 
         this.id = id;
         this.name = name;
@@ -204,6 +210,8 @@ public class Event {
     }
 
     public List<EventIdea> getOrganizerIdeas() { return List.copyOf(ideas); }
+    /** Data restoration preserves idea IDs and submission times instead of generating new ones. */
+    public void restoreOrganizerIdeas(List<EventIdea> restored) { ideas.clear();ideas.addAll(List.copyOf(restored)); }
     public void addConstraint(String constraint) { constraints.add(PlanningValues.text(constraint, "Constraint")); }
     public List<String> getConstraints() { return List.copyOf(constraints); }
     public List<EventConcept> getConcepts() { return List.copyOf(concepts); }

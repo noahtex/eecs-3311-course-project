@@ -12,6 +12,8 @@ import java.util.Objects;
 
 /** UI-independent controller shared by application views. */
 public class EventPlanningController {
+    public String storageDescription(){return facade.storageDescription();}
+    public Event createEventWithEnd(String name,String type,String location,LocalDateTime start,LocalDateTime end,int attendance,double budget){return facade.createEventWithEnd(name,type,location,start,end,attendance,budget);}
     public PlanChange proposeChange(String eventId, String request) { return facade.proposeChange(eventId,request); }
     public PlanChange proposeChangeFields(String eventId, java.util.Map<String,String> fields) { return facade.proposeChangeFields(eventId,fields); }
     public PlanChange pendingChanges(String eventId) { return facade.pendingChanges(eventId); }

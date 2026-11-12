@@ -2,7 +2,10 @@
 .label { -fx-text-fill: #1E293B; }
 .sidebar { -fx-background-color: #FFFFFF; -fx-padding: 26 14; -fx-spacing: 5; -fx-border-color: transparent #E2E5ED transparent transparent; }
 .sidebar-shell, .sidebar-shell > .viewport { -fx-background-color: #FFFFFF; }
-.brand { -fx-text-fill: #3730A3; -fx-font-size: 22px; -fx-font-weight: bold; -fx-padding: 0 12 24 12; }
+.brand { -fx-text-fill: #3730A3; -fx-font-size: 22px; -fx-font-weight: bold; }
+.brand-block { -fx-padding: 0 10 20 10; }
+.brand-row { -fx-alignment: center-left; }
+.brand-tagline { -fx-font-size: 12px; }
 .sidebar .button, .sidebar .button.secondary { -fx-alignment: center-left; -fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #475569; -fx-padding: 10 12; -fx-font-weight: normal; -fx-min-height: 40; }
 .sidebar .button:hover { -fx-background-color: #F4F3FF; -fx-text-fill: #3730A3; }
 .sidebar .button.active { -fx-background-color: #EEECFF; -fx-text-fill: #3730A3; -fx-font-weight: bold; }

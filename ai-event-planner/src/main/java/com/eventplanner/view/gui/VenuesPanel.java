@@ -12,7 +12,7 @@ final class VenuesPanel {
   var comparisons=new javafx.scene.layout.VBox(14);for(var comparison:e.getVenueComparisons())comparisons.getChildren().add(ResultViews.comparison(comparison,names));if(e.getVenueComparisons().isEmpty())comparisons.getChildren().add(Ui.note("Compare researched candidates to inspect suitability and trade-offs."));
   return Ui.page("Venue research","Search real Google Places candidates. Candidates are not bookings; availability and unknown attributes require direct confirmation.",
    Ui.row(query,Ui.button("Research venues",()->{String q=query.getText().strip();if(q.isBlank()){d.action(()->{throw new IllegalArgumentException("Enter venue search requirements.");});return;}d.background("Researching Google Places venues",()->d.controller.researchVenues(id,q));}),Ui.button("Compare suitability",()->d.background("Comparing venues",()->d.controller.compareVenues(id)))),
-   Ui.row(Ui.button("Configure venue requirements",()->new Ui.Form().field("Wheelchair entrance required (yes/no)",e.requiresWheelchairEntrance()?"yes":"no").field("Equipment (comma-separated)",String.join(", ",e.getRequiredEquipment())).show("Venue requirements",f->{Boolean required=GuiInputs.optionalBoolean(f.get("Wheelchair entrance required (yes/no)"));if(required==null)throw new IllegalArgumentException("Choose yes or no.");d.controller.configureVenueNeeds(id,required,GuiInputs.csv(f.get("Equipment (comma-separated)")));d.edited();})),Ui.button("Add manual venue",()->manual(id,e))),
+   Ui.row(Ui.button("Configure venue requirements",()->new Ui.Form().field("Wheelchair entrance required (yes/no)",e.requiresWheelchairEntrance()?"yes":"no").field("Equipment (comma-separated)",String.join(", ",e.getRequiredEquipment())).show("Venue requirements",f->{Boolean required=GuiInputs.optionalBoolean(f.get("Wheelchair entrance required (yes/no)"));if(required==null)throw new IllegalArgumentException("Choose yes or no.");var equipment=GuiInputs.csv(f.get("Equipment (comma-separated)"));d.background("Saving venue requirements",()->{d.controller.configureVenueNeeds(id,required,equipment);return null;});})),Ui.button("Add manual venue",()->manual(id,e))),
    ResultViews.warnings("Search warnings",Ui.lines("Search warnings",d.session.venueWarnings(id)),names),Ui.inspectView(table,ResultViews::venue),Ui.card("Suitability comparisons",comparisons));
  }
  private static String fact(Evidence<?> value){return value.value()==null?"UNKNOWN":value.value()+" ["+value.status()+"]";}
@@ -25,7 +25,7 @@ final class VenuesPanel {
   Boolean wheelchair=GuiInputs.optionalBoolean(f.get("Wheelchair entrance (yes/no/blank)"));
   String equipment=f.get("Equipment (comma-separated; blank = unknown; none = empty)");List<String> items=equipment.isBlank()?null:equipment.equalsIgnoreCase("none")?List.of():GuiInputs.csv(equipment);
   var venue=new VenueOption("manual:"+UUID.randomUUID(),f.get("Venue name"),f.get("Address"),"Manual planner entry: "+source,Instant.now(),Map.of(),evidence(capacity,status,source),evidence(cost,status,source),e.getPlanningCurrency(),evidence(wheelchair,status,source),evidence(items,status,source));
-  d.controller.addVenue(id,venue);d.edited();
+  d.background("Saving manual venue",()->{d.controller.addVenue(id,venue);return null;});
  });}
  private static <T> Evidence<T> evidence(T value,Evidence.Status status,String source){return value==null?Evidence.unknown():new Evidence<>(value,status,source);}
 }

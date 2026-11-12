@@ -11,12 +11,12 @@ final class TasksPanel {
   boolean draft=d.controller.hasTaskDraft(id);
   var edit=Ui.button("Edit assignment",()->d.action(()->{
    Task t=Ui.selected(tasks);new Ui.Form().option("Assigned team member",names.memberOptions(t.assignedUserId()),t.assignedUserId()).dateTime("Work start",t.workStart()).dateTime("Deadline",t.deadline()).show("Edit task assignment",f->{
-    String member=f.get("Assigned team member");d.controller.reviseTask(id,t.id(),member.isBlank()?null:member,GuiInputs.date(f.get("Work start")),GuiInputs.date(f.get("Deadline")));d.edited();
+    String member=f.get("Assigned team member");var start=GuiInputs.date(f.get("Work start"));var end=GuiInputs.date(f.get("Deadline"));new TimeSlot(start,end);d.background("Saving task assignment",()->{d.controller.reviseTask(id,t.id(),member.isBlank()?null:member,start,end);return null;});
    });
   }));
-  var status=Ui.button("Change status",()->d.action(()->{Task t=Ui.selected(tasks);new Ui.Form().field("Status",t.status()).show("Task status",f->{d.controller.updateTaskStatus(id,t.id(),GuiInputs.enumeration(Task.Status.class,f.get("Status")));d.edited();});}));
+  var status=Ui.button("Change status",()->d.action(()->{Task t=Ui.selected(tasks);new Ui.Form().field("Status",t.status()).show("Task status",f->{var value=GuiInputs.enumeration(Task.Status.class,f.get("Status"));d.background("Saving task status",()->{d.controller.updateTaskStatus(id,t.id(),value);return null;});});}));
   var approve=Ui.button("Approve draft",()->d.action(()->{if(Ui.confirm("Approve tasks?","Approve the displayed draft assignments after reviewing warnings?"))d.background("Approving tasks",()->{d.controller.approveTasks(id);return null;});}));approve.setDisable(!draft);
-  var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard task draft?","Retain the previously approved task plan?"))d.controller.discardTasks(id);}));discard.setDisable(!draft);
+  var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard task draft?","Retain the previously approved task plan?"))d.background("Discarding task draft",()->{d.controller.discardTasks(id);return null;});}));discard.setDisable(!draft);
   return Ui.page("Tasks & planning team","Review workloads, assignments and availability. Changes remain drafts until you explicitly approve them.",
    Ui.card("Planning team",Ui.row(Ui.button("Add team member",()->member(id,null)),Ui.button("Edit selected member",()->d.action(()->member(id,Ui.selected(members))))),Ui.inspectView(members,u->ResultViews.member(u,names))),
    Ui.card("Task plan",Ui.badge(draft?"DRAFT":"APPROVED"),Ui.row(Ui.button("Generate task proposal",()->d.background("Generating tasks",()->d.controller.generateTasks(id))),edit,status,Ui.button("Validate tasks",()->d.validate(id,"tasks")),approve,discard),Ui.inspectView(tasks,t->ResultViews.task(t,names)),ResultViews.warnings("Assignment review",d.diagnostics(id,"tasks"),names)));
@@ -27,7 +27,7 @@ final class TasksPanel {
    .availability("Availability",u==null?List.of():u.getAvailability()).field("Existing workload hours",u==null?"0":u.getExistingWorkloadHours()).field("Capacity hours",u==null?"":u.getCapacityHours()).technical("Member reference: "+memberId).show("Configure team member",f->{
     User user=new User(memberId,GuiInputs.required(f.get("Name")),u==null?"":u.getEmail(),u==null?"Planner":u.getRole());
     user.configurePlanning(GuiInputs.csv(f.get("Skills (comma-separated)")),GuiInputs.csv(f.get("Preferences (comma-separated)")),GuiInputs.slots(f.get("Availability")),GuiInputs.number(f.get("Existing workload hours")),GuiInputs.number(f.get("Capacity hours")));
-    d.controller.configureMember(id,user);d.edited();
+    d.background("Saving team member",()->{d.controller.configureMember(id,user);return null;});
    });
  }
 }

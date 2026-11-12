@@ -38,7 +38,7 @@ final class PostEventPanel {
   });
   int selected=state.selectedReport>=0&&state.selectedReport<reports.size()?state.selectedReport:reports.size()-1;
   if(selected>=0)history.setValue(selected);history.setPromptText("No stored reports yet");
-  var reportText=new javafx.scene.layout.VBox(14,selected<0?Ui.note("Save actual outcomes, then generate an analysis. Reports remain in this session."):ResultViews.report(reports.get(selected),event.getPlanningCurrency(),names));
+  var reportText=new javafx.scene.layout.VBox(14,selected<0?Ui.note("Save actual outcomes, then generate an analysis. Generated reports are saved with the event."):ResultViews.report(reports.get(selected),event.getPlanningCurrency(),names));
   history.valueProperty().addListener((o,a,b)->{if(b!=null){state.selectedReport=b;reportText.getChildren().setAll(ResultViews.report(reports.get(b),event.getPlanningCurrency(),names));}});
   return Ui.page("Post-Event Review","Blank actual attendance and expenses mean UNKNOWN, never zero. Save outcomes before generating analysis. Feedback entries remain attributed to their source.",
    Ui.card("Actual outcomes in "+event.getPlanningCurrency(),new Label("Actual attendance"),attendance,new Label("Actual expenses"),expenses,

@@ -6,7 +6,7 @@ Run from `ai-event-planner`:
 mvn javafx:run
 ```
 
-Use the existing Gemini configuration for AI generation. No new dependencies or credentials are required. The FAQ uses the existing conservative backend answer rules rather than making an AI request. Events, inputs, generated histories and transient results last only for the current application session.
+Use the existing Gemini configuration for AI generation. No new dependencies or credentials are required. The FAQ uses the existing conservative backend answer rules rather than making an AI request. Events and generated histories now use the shared [local JSON store](PERSISTENCE_GUIDE.md). Unsaved inputs and transient simulation/FAQ results remain session-only.
 
 ## Controls and application operations
 

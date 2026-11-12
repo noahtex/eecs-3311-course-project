@@ -11,6 +11,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CLIAppLifecycleTest {
+    @Test void cliMutationsUseTheSameJsonStoreAndReleaseItsLock(@org.junit.jupiter.api.io.TempDir java.nio.file.Path directory){
+        String id;
+        var facade=new EventPlanningFacade(new EventService(),new EventPlanningAgent(new OwnedModel()),q->{throw new AssertionError("No network");},q->{throw new AssertionError("No network");},new com.eventplanner.storage.JsonPlanRepository(directory));
+        id=facade.createEvent("CLI event","Social","Campus",java.time.LocalDateTime.parse("2099-01-01T18:00"),80,1000).getId();
+        var output=new ByteArrayOutputStream();CLIApp.run(facade,new Scanner("constraints add "+id+"\nConstraint saved from CLI\nexit\n"),new PrintStream(output));
+        assertTrue(output.toString().contains("Constraint added"));
+        try(var reopened=new EventPlanningFacade(new EventService(),new EventPlanningAgent(new OwnedModel()),q->{throw new AssertionError();},q->{throw new AssertionError();},new com.eventplanner.storage.JsonPlanRepository(directory))){assertEquals(java.util.List.of("Constraint saved from CLI"),reopened.viewEvent(id).getConstraints());}
+    }
     private static final class OwnedModel implements AIModel {
         int closes;
         @Override public String generate(String prompt) { return fail("No network operations expected"); }

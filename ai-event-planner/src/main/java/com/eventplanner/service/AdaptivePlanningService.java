@@ -18,6 +18,9 @@ public final class AdaptivePlanningService {
    @Override public void serialize(java.time.Instant value,com.fasterxml.jackson.core.JsonGenerator generator,SerializerProvider provider) throws java.io.IOException { generator.writeString(value.toString()); }
   }));
  public AdaptivePlanningService(EventPlanningAgent agent) { this.agent=agent; }
+ public PlanChange pendingOrNull(Event event){return pending.get(event);}
+ public void restorePending(Map<Event,PlanChange> restored){pending.clear();pending.putAll(restored);}
+ public void removePending(Event event){pending.remove(event);}
  private String encode(Object value) {
   try { return json.writeValueAsString(value); } catch(Exception ex) { throw new IllegalArgumentException("Cannot encode planning context."); }
  }

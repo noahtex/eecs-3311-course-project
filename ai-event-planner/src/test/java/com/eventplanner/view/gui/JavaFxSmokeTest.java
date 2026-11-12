@@ -44,8 +44,19 @@ class JavaFxSmokeTest {
  @AfterAll static void shutdown(){Platform.exit();}
  private static <T> T fx(Callable<T> action) throws Exception {var task=new FutureTask<>(action);Platform.runLater(task);return task.get(15,TimeUnit.SECONDS);}
  private EventPlanningFacade facade(){return new EventPlanningFacade(new EventService(),new EventPlanningAgent(p->{throw new AssertionError("No AI during UI smoke test");}),q->{throw new AssertionError("No Places during UI smoke test");},q->{throw new AssertionError("No external requests");});}
- @Test void actualAppStartsLoadsStylesAndClosesNormally() throws Exception {
-  fx(()->{var app=new App();var stage=new Stage();try{app.start(stage);assertTrue(stage.isShowing());assertTrue(stage.getScene().getStylesheets().getFirst().endsWith("dashboard.css"));assertEquals("ClubPlan | Event planning workspace",stage.getTitle());}finally{stage.close();app.stop();}return null;});
+ @Test void actualAppStartsLoadsStylesAndClosesNormally(@org.junit.jupiter.api.io.TempDir java.nio.file.Path data) throws Exception {
+  try(var saved=new EventPlanningFacade(new EventService(),new EventPlanningAgent(p->{throw new AssertionError("No network during startup test");}),q->{throw new AssertionError();},q->{throw new AssertionError();},new com.eventplanner.storage.JsonPlanRepository(data))){saved.createEventWithEnd("Saved startup event","Social","Campus",java.time.LocalDateTime.parse("2099-01-01T18:00"),java.time.LocalDateTime.parse("2099-01-01T21:00"),80,1000);}
+  String previous=System.getProperty("planit.dataDir");System.setProperty("planit.dataDir",data.toString());var app=new App();
+  try{app.init();fx(()->{var stage=new Stage();try{
+   app.start(stage);assertTrue(stage.isShowing());assertTrue(stage.getScene().getStylesheets().getFirst().endsWith("dashboard.css"));assertEquals("Planit",stage.getTitle());
+   assertTrue(nodes(stage.getScene().getRoot()).filter(n->n instanceof TableView<?>).map(n->(TableView<?>)n).flatMap(table->table.getItems().stream()).anyMatch(value->value instanceof com.eventplanner.model.Event event&&event.getName().equals("Saved startup event")));
+   assertEquals(java.util.List.of(32.0,64.0,256.0,512.0),stage.getIcons().stream().map(javafx.scene.image.Image::getWidth).toList());assertTrue(stage.getIcons().stream().noneMatch(javafx.scene.image.Image::isError));
+   assertTrue(nodes(stage.getScene().getRoot()).anyMatch(n->n instanceof Label label&&label.getText().equals("Planit")));
+   assertTrue(nodes(stage.getScene().getRoot()).anyMatch(n->n instanceof Label label&&label.getText().equals("From ideas to execution.")));
+   var logo=nodes(stage.getScene().getRoot()).filter(n->n instanceof javafx.scene.image.ImageView).map(n->(javafx.scene.image.ImageView)n).findFirst().orElseThrow();assertTrue(logo.isPreserveRatio());assertFalse(logo.getImage().isError());assertEquals(40,logo.getFitWidth());
+  }finally{stage.close();app.stop();}return null;});
+   for(Thread thread:Thread.getAllStackTraces().keySet())if(thread.getName().equals("planner-requests"))thread.join(5000);
+  }finally{if(previous==null)System.clearProperty("planit.dataDir");else System.setProperty("planit.dataDir",previous);}
  }
  @Test void dateTimeControlsPreserveLocalValuesAndRejectIncompleteAndReversedWindows() throws Exception {
   fx(()->{
@@ -104,9 +115,9 @@ class JavaFxSmokeTest {
    }finally{stage.close();dashboard.close();}return null;});
  }}
  @Test void calendarCreateFormValidatesBeforeDelegatingAndKeepsLocalTimes() throws Exception {try(var facade=facade()){
-  fx(()->{
-   var session=new GuiSession(new EventPlanningController(facade));var d=new Dashboard(session);var failure=new java.util.concurrent.atomic.AtomicReference<Throwable>();
-   try{
+  Dashboard d=fx(()->new Dashboard(new GuiSession(new EventPlanningController(facade))));
+  try{
+   operation(d,()->{var session=d.session;var failure=new java.util.concurrent.atomic.AtomicReference<Throwable>();
     Platform.runLater(()->{
      DialogPane pane=null;
      try{
@@ -122,10 +133,10 @@ class JavaFxSmokeTest {
      }catch(Throwable ex){failure.set(ex);if(pane!=null)((Button)pane.lookupButton(ButtonType.CANCEL)).fire();}
     });
     button(d,"Create event").fire();if(failure.get()!=null)throw new AssertionError(failure.get());
-    assertEquals(java.time.LocalDateTime.parse("2027-03-14T02:30"),session.active().getDateTime());
-    assertEquals(java.time.LocalDateTime.parse("2027-03-14T04:30"),session.active().getEndDateTime());assertEquals(80,session.active().getExpectedAttendance());
-   }finally{d.close();}return null;
-  });
+
+   });
+   fx(()->{assertEquals(java.time.LocalDateTime.parse("2027-03-14T02:30"),d.session.active().getDateTime());assertEquals(java.time.LocalDateTime.parse("2027-03-14T04:30"),d.session.active().getEndDateTime());assertEquals(80,d.session.active().getExpectedAttendance());return null;});
+  }finally{fx(()->{d.close();return null;});}
  }}
  @Test void placesButtonExecutesOffFxAndRetainsSearchInput() throws Exception {
   var query=new java.util.concurrent.atomic.AtomicReference<String>();var cleaned=new CountDownLatch(1);
@@ -135,6 +146,36 @@ class JavaFxSmokeTest {
    operation(d,()->{d.partB(d.id()).inputs.put("venueQuery","Accessible hall");button(d,"Venue research").fire();button(d,"Research venues").fire();button(d,"Ideas").fire();});
    fx(()->{button(d,"Venue research").fire();assertEquals("Accessible hall near Campus",query.get());assertTrue(nodes(d.root()).anyMatch(n->n instanceof TextField field&&field.getText().equals("Accessible hall")));assertEquals(java.util.List.of("Availability remains unknown"),d.session.venueWarnings(d.id()));return null;});
   }finally{fx(()->{d.close();return null;});assertTrue(cleaned.await(10,TimeUnit.SECONDS));}
+ }
+ @Test void persistentSavesStayOffFxAndFailedSavesRestoreTheView(@org.junit.jupiter.api.io.TempDir java.nio.file.Path directory)throws Exception{
+  var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var cleaned=new CountDownLatch(1);
+  var block=new java.util.concurrent.atomic.AtomicBoolean();var fail=new java.util.concurrent.atomic.AtomicBoolean();
+  var repository=new com.eventplanner.storage.JsonPlanRepository(directory){
+   @Override public void save(com.eventplanner.storage.PlanData data){
+    assertFalse(Platform.isFxApplicationThread());
+    if(block.get()){entered.countDown();try{assertTrue(release.await(10,TimeUnit.SECONDS));}catch(InterruptedException ex){Thread.currentThread().interrupt();throw new AssertionError(ex);}}
+    if(fail.get())throw new com.eventplanner.storage.StorageException("Save failed. Previous saved data is retained.");super.save(data);
+   }
+  };
+  var facade=new EventPlanningFacade(new EventService(),new EventPlanningAgent(p->{throw new AssertionError("No AI");}),q->{throw new AssertionError("No Places");},q->{throw new AssertionError("No catering");},repository);
+  String first=facade.createEvent("First","Social","Campus",java.time.LocalDateTime.parse("2099-01-01T18:00"),80,1000).getId();
+  String second=facade.createEvent("Second","Social","Campus",java.time.LocalDateTime.parse("2099-01-02T18:00"),80,1000).getId();
+  Dashboard d=fx(()->{var session=new GuiSession(new EventPlanningController(facade));session.select(first);return new Dashboard(session,()->{facade.close();cleaned.countDown();});});
+  try{
+   var done=new CountDownLatch(1);block.set(true);
+   fx(()->{status(d).textProperty().addListener((o,a,b)->{if(!d.busy())done.countDown();});d.background("Saving constraint",()->{d.controller.addConstraint(first,"Durable constraint");return null;});return null;});
+   assertTrue(entered.await(10,TimeUnit.SECONDS));
+   fx(()->{assertTrue(d.busy());d.session.select(second);button(d,"Ideas").fire();assertEquals(second,d.id());return null;});
+   release.countDown();assertTrue(done.await(10,TimeUnit.SECONDS));block.set(false);byte[] before=java.nio.file.Files.readAllBytes(repository.file());
+   var failed=new CountDownLatch(1);fail.set(true);
+   fx(()->{status(d).textProperty().addListener((o,a,b)->{if(b.startsWith("Save failed"))failed.countDown();});d.background("Saving failing constraint",()->{d.controller.addConstraint(second,"Unsaved constraint");return null;});return null;});
+   assertTrue(failed.await(10,TimeUnit.SECONDS));
+   fx(()->{assertFalse(d.busy());assertTrue(d.controller.viewEvent(second).getConstraints().isEmpty());assertTrue(status(d).getText().contains("Previous saved data"));return null;});
+   assertArrayEquals(before,java.nio.file.Files.readAllBytes(repository.file()));
+  }finally{release.countDown();fx(()->{d.close();return null;});assertTrue(cleaned.await(10,TimeUnit.SECONDS));}
+  try(var saved=new com.eventplanner.storage.JsonPlanRepository(directory)){
+   var data=saved.load().orElseThrow();var restored=com.eventplanner.storage.PlanDataMapper.restore(data);assertEquals(java.util.List.of("Durable constraint"),restored.stream().filter(e->e.getId().equals(first)).findFirst().orElseThrow().getConstraints());
+  }
  }
  @Test void backgroundRequestsStayOffFxThreadAndRejectRepeatedSubmissions() throws Exception {try(var facade=facade()){
   var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var calls=new java.util.concurrent.atomic.AtomicInteger();

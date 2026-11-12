@@ -40,6 +40,7 @@ public class PlanningTeam {
     public List<Event> getEvents() {
         return List.copyOf(events);
     }
+    public void removeEvent(Event event){events.remove(event);}
 
     public String getId() {
         return id;

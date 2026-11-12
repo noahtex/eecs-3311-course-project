@@ -13,11 +13,11 @@ final class BudgetPanel {
    new Ui.Form().field("Category",item.category()).field("Description",item.description()).field("Quantity",item.quantity()).field("Unit cost (blank if UNKNOWN)",item.unitCost()).field("Price status (CONFIRMED / ESTIMATED / UNKNOWN)",item.priceStatus()).field("Source / quote / assumption",item.source()).show("Edit budget allocation",f->{
     var status=GuiInputs.enumeration(BudgetItem.PriceStatus.class,f.get("Price status (CONFIRMED / ESTIMATED / UNKNOWN)"));
     var cost=f.get("Unit cost (blank if UNKNOWN)").isBlank()?null:GuiInputs.money(f.get("Unit cost (blank if UNKNOWN)"));
-    d.controller.editBudget(id,new BudgetItem(item.id(),f.get("Category"),f.get("Description"),GuiInputs.money(f.get("Quantity")),cost,status,f.get("Source / quote / assumption")));d.edited();
+    var replacement=new BudgetItem(item.id(),f.get("Category"),f.get("Description"),GuiInputs.money(f.get("Quantity")),cost,status,f.get("Source / quote / assumption"));d.background("Saving budget allocation",()->{d.controller.editBudget(id,replacement);return null;});
    });
   }));
   boolean draft=d.controller.hasBudgetDraft(id);var approve=Ui.button("Approve budget",()->d.action(()->{if(Ui.confirm("Approve budget?","Approve the displayed allocations? Estimates remain estimates."))d.background("Approving budget",()->{d.controller.approveBudget(id);return null;});}));approve.setDisable(!draft);
-  var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard budget draft?","Retain the approved budget?"))d.controller.discardBudget(id);}));discard.setDisable(!draft);
+  var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard budget draft?","Retain the approved budget?"))d.background("Discarding budget draft",()->{d.controller.discardBudget(id);return null;});}));discard.setDisable(!draft);
   String totals=exists?"Known subtotal: "+d.controller.budgetTotal(id)+" | Remaining against known subtotal: "+d.controller.budgetRemaining(id)+" "+budget.currency():"No budget yet.";
   return Ui.page("Budget & catering","Unknown costs are never treated as free. Approved estimates are not verified supplier quotes.",
    Ui.row(Ui.button("Configure catering needs",()->needs(id,e)),priority,Ui.button("Generate budget",()->{String p=priority.getValue();d.background("Generating budget and catering",()->d.controller.generateBudget(id,p));})),
@@ -25,6 +25,6 @@ final class BudgetPanel {
    Ui.card("Catering recommendations & assumptions",exists?ResultViews.catering(budget,names):Ui.note("No catering recommendations yet.")));
  }
  private void needs(String id,Event e){new Ui.Form().field("Currency (ISO code)",e.getPlanningCurrency()).field("Dietary requirements (comma-separated)",String.join(", ",e.getDietaryRequirements())).field("Catering needs",e.getCateringNeeds()).show("Budget & catering needs",f->{
-  d.controller.configureBudgetNeeds(id,f.get("Currency (ISO code)").toUpperCase(Locale.ROOT),GuiInputs.csv(f.get("Dietary requirements (comma-separated)")),f.get("Catering needs"));d.edited();
+  String currency=f.get("Currency (ISO code)").toUpperCase(Locale.ROOT);java.util.Currency.getInstance(currency);var dietary=GuiInputs.csv(f.get("Dietary requirements (comma-separated)"));String catering=GuiInputs.required(f.get("Catering needs"));d.background("Saving catering requirements",()->{d.controller.configureBudgetNeeds(id,currency,dietary,catering);return null;});
  });}
 }

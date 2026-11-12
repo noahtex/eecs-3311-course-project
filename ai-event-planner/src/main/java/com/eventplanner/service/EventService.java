@@ -5,15 +5,21 @@ import com.eventplanner.model.EventIdea;
 import com.eventplanner.model.EventConcept;
 import com.eventplanner.model.EventBlueprint;
 import com.eventplanner.model.PlanningValues;
-import java.util.ArrayList;
 import java.util.List;
 
 public class EventService {
 
-    private List<Event> events;
+    private volatile List<Event> events;
 
     public EventService() {
-        this.events = new ArrayList<>();
+        this.events = new java.util.concurrent.CopyOnWriteArrayList<>();
+    }
+
+    /** Publish a fully restored graph only after validation; event selection can read without blocking AI work. */
+    public void restoreEvents(List<Event> restored) {
+        var ids=new java.util.HashSet<String>();
+        for(Event event:restored)if(!ids.add(event.getId()))throw new IllegalArgumentException("Duplicate event ID.");
+        events=new java.util.concurrent.CopyOnWriteArrayList<>(restored);
     }
 
     public void createEvent(Event event) {

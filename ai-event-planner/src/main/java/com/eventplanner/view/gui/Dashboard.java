@@ -6,6 +6,8 @@ import javafx.concurrent.Task;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.util.StringConverter;
 import java.util.concurrent.*;
 
@@ -17,7 +19,7 @@ public final class Dashboard implements AutoCloseable {
  private final VBox navigation=new VBox(8);
  private final ComboBox<Event> events=new ComboBox<>();
  private final java.util.Map<String,String> eventLabels=new java.util.HashMap<>();
- private final Label status=new Label("Ready. Events are stored for this session only.");
+ private final Label status=new Label("Ready. Successful changes are saved to the configured event store.");
  private final ProgressIndicator progress=new ProgressIndicator();
  private final ExecutorService executor=Executors.newSingleThreadExecutor(r->{var t=new Thread(r,"planner-requests"); t.setDaemon(false); return t;});
  private String section="Events";
@@ -39,7 +41,13 @@ public final class Dashboard implements AutoCloseable {
  public Dashboard(GuiSession session,Runnable cleanup) {
   this.cleanup=cleanup;
   this.session=session; controller=session.controller();
-  var brand=new Label("CLUB / PLAN"); brand.getStyleClass().add("brand"); navigation.getChildren().add(brand);
+  var brand=new Label("Planit");brand.getStyleClass().add("brand");
+  var icon=new ImageView(new Image(java.util.Objects.requireNonNull(Dashboard.class.getResource(
+   "/com/eventplanner/assets/planit/planit_icon_64.png"),"Missing Planit sidebar icon").toExternalForm()));
+  icon.setFitWidth(40);icon.setFitHeight(40);icon.setPreserveRatio(true);icon.setSmooth(true);icon.setAccessibleText("Planit logo");
+  var brandRow=new HBox(10,icon,brand);brandRow.getStyleClass().add("brand-row");
+  var tagline=Ui.note("From ideas to execution.");tagline.getStyleClass().add("brand-tagline");
+  var branding=new VBox(6,brandRow,tagline);branding.getStyleClass().add("brand-block");navigation.getChildren().add(branding);
   for(String name:new String[]{"Events","Ideas","Blueprints","Tasks & team","Schedule","Budget & catering","Venue research","Scenario Simulator","Plan Updates & Contingencies","Communications & FAQ","Post-Event Review"}) {
    var button=Ui.button(name,()->{ section=name; refresh(); }); button.setWrapText(true);button.setMaxWidth(Double.MAX_VALUE); navigation.getChildren().add(button);
   }
@@ -107,7 +115,7 @@ public final class Dashboard implements AutoCloseable {
   Task<Completion> task=new Task<>() { @Override protected Completion call() throws Exception{
    var checks=new java.util.HashMap<String,String>();
    Object result=work.call();
-   if(requestEvent!=null){
+   if(requestEvent!=null&&controller.listEvents().stream().anyMatch(event->event.getId().equals(requestEvent))){
     checks.put(requestEvent+":tasks",validateNow(requestEvent,"tasks"));
     var event=controller.viewEvent(requestEvent);
     if(controller.hasScheduleDraft(requestEvent)||event.getSchedule()!=null)checks.put(requestEvent+":schedule",validateNow(requestEvent,"schedule"));
@@ -125,7 +133,7 @@ public final class Dashboard implements AutoCloseable {
   executor.execute(task);
  }
  private void lock(boolean value){if(root.getCenter()!=null)root.getCenter().setDisable(value);progress.setVisible(value);progress.setManaged(value);}
- private void failure(Throwable ex){if(!status.getStyleClass().contains("error"))status.getStyleClass().add("error");status.setText(ex instanceof IllegalArgumentException || ex instanceof PlanningException ? ex.getMessage():"Operation failed. Check your configuration and try again.");}
+ private void failure(Throwable ex){if(!status.getStyleClass().contains("error"))status.getStyleClass().add("error");status.setText(ex instanceof IllegalArgumentException || ex instanceof PlanningException || ex instanceof com.eventplanner.storage.StorageException ? ex.getMessage():"Operation failed. Check your configuration and try again.");}
  public boolean busy(){return busy;}
  @Override public void close(){if(closed)return;closed=true;executor.submit(()->{try{cleanup.run();}catch(RuntimeException ignored){/* Never leak transport diagnostics or credentials. */}});executor.shutdown();}
 }
