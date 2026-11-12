@@ -1,0 +1,29 @@
+.root { -fx-font-family: "Segoe UI", sans-serif; -fx-font-size: 13px; -fx-background-color: #f3f5fa; -fx-text-fill: #17243a; }
+.sidebar { -fx-background-color: #15233c; -fx-padding: 30 16; -fx-spacing: 10; }
+.brand { -fx-text-fill: #a7c6ff; -fx-font-size: 21px; -fx-font-weight: bold; -fx-padding: 0 8 26 8; }
+.sidebar .button { -fx-alignment: center-left; -fx-background-color: transparent; -fx-text-fill: #e0e8f5; -fx-padding: 13 16; }
+.sidebar .button:hover { -fx-background-color: #293b59; }
+.header { -fx-background-color: white; -fx-padding: 22 28; -fx-alignment: center-left; -fx-border-color: transparent transparent #dce3ed transparent; }
+.header-title { -fx-font-size: 18px; -fx-font-weight: bold; }
+.page { -fx-padding: 28; -fx-spacing: 20; }
+.section-title { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #17243a; }
+.card { -fx-background-color: white; -fx-background-radius: 12; -fx-padding: 22; -fx-border-color: #dfe5ee; -fx-border-radius: 12; }
+.card .section-title { -fx-font-size: 16px; }
+.muted { -fx-text-fill: #596981; -fx-line-spacing: 3; }
+.button { -fx-background-color: #275dd7; -fx-text-fill: white; -fx-background-radius: 7; -fx-padding: 10 16; -fx-cursor: hand; -fx-font-weight: bold; }
+.button:hover { -fx-background-color: #1948b5; }
+.button:disabled { -fx-opacity: 0.45; }
+.button.danger { -fx-background-color: #a63140; }
+.text-field, .text-area, .combo-box { -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: #d3dce9; -fx-background-color: white; }
+.text-area .content { -fx-background-color: white; }
+.table-view { -fx-border-color: #dfe5ee; -fx-background-color: white; -fx-background-radius: 7; }
+.table-view .column-header { -fx-background-color: #edf2fa; -fx-padding: 10 4; }
+.table-row-cell { -fx-cell-size: 38px; }
+.table-row-cell:odd { -fx-background-color: #f8faff; }
+.table-row-cell:selected { -fx-background-color: #dce7ff; -fx-text-background-color: #17243a; }
+.footer { -fx-background-color: #e9eef7; -fx-padding: 13 28; -fx-alignment: center-left; }
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.error { -fx-text-fill: #a63140; }
+.dialog-pane { -fx-padding: 20; }
+
+.sidebar .button.active { -fx-background-color: #314c75; -fx-text-fill: white; }

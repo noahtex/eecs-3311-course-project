@@ -245,3 +245,6 @@ Stage 1 focuses on defining the system requirements, features, architecture, UML
 
 
 Milestone 4 (F07-F10) commands, architecture, approval boundaries and limitations: [MILESTONE4_GUIDE.md](MILESTONE4_GUIDE.md).
+
+
+JavaFX dashboard (Milestone 5, Part A): [launch, feature workflows and verification](MILESTONE5_PART_A_GUIDE.md).
