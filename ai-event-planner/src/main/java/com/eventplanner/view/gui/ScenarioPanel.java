@@ -8,14 +8,14 @@ final class ScenarioPanel {
  private final Dashboard d;
  ScenarioPanel(Dashboard d){this.d=d;}
  Node build(){
-  String id=d.id();var state=d.partB(id);
+  String id=d.id();var state=d.partB(id);var names=new DisplayNames(d.session.active());
   var request=state.area("scenario","e.g. Attendance increases to 150");
   return Ui.page("Scenario Simulator","HYPOTHETICAL — simulations never apply changes to the real event or approved plans.",
    request,Ui.row(Ui.button("Run simulation",()->d.action(()->{
     String text=GuiInputs.required(request.getText());
     d.background("Simulating hypothetical change",()->d.controller.simulateScenario(id,text),result->state.simulation=result);
    })),Ui.button("Clear simulation",()->{request.clear();state.simulation=null;d.refresh();})),
-   Ui.details(state.simulation==null?"Run a simulation to inspect hypothetical impacts.":describe(state.simulation)));
+   state.simulation==null?Ui.section("Explore an alternative","Describe a change above to compare its hypothetical impacts with the current plan."):ResultViews.scenario(state.simulation,names));
  }
  static String fields(Map<String,String> values){
   return String.join("\n",new java.util.TreeMap<>(values).entrySet().stream().map(e->e.getKey()+": "+e.getValue()).toList());

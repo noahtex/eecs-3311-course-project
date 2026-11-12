@@ -1,35 +1,55 @@
 package com.eventplanner.view.gui;
 import com.eventplanner.model.*;
 import javafx.scene.Node;
+import javafx.scene.layout.VBox;
 import java.util.*;
 final class SchedulePanel {
  private final Dashboard d; SchedulePanel(Dashboard d){this.d=d;}
  Node build(){
-  String id=d.id();Event e=d.session.active();boolean exists=d.controller.hasScheduleDraft(id)||e.getSchedule()!=null;
+  String id=d.id();Event e=d.session.active();var names=new DisplayNames(e);boolean exists=d.controller.hasScheduleDraft(id)||e.getSchedule()!=null;
   List<Session> sessions=exists?d.controller.viewSchedule(id).sessions().stream().sorted(Comparator.comparing(s->s.slot().start())).toList():List.of();
-  var table=Ui.table(sessions);Ui.column(table,"Session",Session::title);Ui.column(table,"Kind",Session::kind);Ui.column(table,"Start",s->s.slot().start());Ui.column(table,"End",s->s.slot().end());Ui.column(table,"Speaker",Session::speakerId);Ui.column(table,"Space",Session::space);
-  var window=Ui.button("Set event end",()->new Ui.Form().field("Event end",e.getEndDateTime()).show("Schedule window starts "+e.getDateTime(),f->{d.controller.configureEventEnd(id,GuiInputs.date(f.get("Event end")));d.edited();}));
+  var table=Ui.table(sessions);Ui.column(table,"Session",Session::title);Ui.column(table,"Kind",Session::kind);Ui.column(table,"Starts",s->s.slot().start());Ui.column(table,"Ends",s->s.slot().end());Ui.column(table,"Speaker",s->names.speaker(s.speakerId()));Ui.column(table,"Space",s->names.resource(s.space()));d.remember(table,"schedule",Session::id);
+  var window=Ui.button("Set event end",()->new Ui.Form().dateTime("Event end",e.getEndDateTime()).show("Event starts "+DisplayNames.date(e.getDateTime()),f->{d.controller.configureEventEnd(id,GuiInputs.date(f.get("Event end")));d.edited();}));
   var edit=Ui.button("Edit selected session",()->d.action(()->{Session s=Ui.selected(table);
-   new Ui.Form().field("Title",s.title()).field("Kind (SETUP / ACTIVITY / BREAK / TEARDOWN)",s.kind()).field("Start",s.slot().start()).field("End",s.slot().end()).field("Speaker ID (blank = none)",s.speakerId()).field("Space resource ID",s.space()).field("Exclusive resources (comma-separated)",String.join(", ",s.resources())).show("Edit session",f->{
-    String speaker=f.get("Speaker ID (blank = none)");d.controller.reviseSession(id,new Session(s.id(),f.get("Title"),GuiInputs.enumeration(Session.Kind.class,f.get("Kind (SETUP / ACTIVITY / BREAK / TEARDOWN)")),new TimeSlot(GuiInputs.date(f.get("Start")),GuiInputs.date(f.get("End"))),speaker.isBlank()?null:speaker,f.get("Space resource ID"),GuiInputs.csv(f.get("Exclusive resources (comma-separated)"))));d.edited();
+   var resources=new ArrayList<>(names.resourceOptions(null));for(String key:s.resources())if(resources.stream().noneMatch(o->o.id().equals(key)))resources.add(new DisplayNames.Option(key,names.resource(key)));
+   var form=new Ui.Form().field("Title",s.title()).field("Kind",s.kind()).dateTime("Start",s.slot().start()).dateTime("End",s.slot().end()).option("Speaker",names.speakerOptions(s.speakerId()),s.speakerId());
+   form.option("Space",names.resourceOptions(s.space()),s.space()).field("New space name (optional)","").field("Additional resource names (comma-separated)","");
+   form.multiOption("Exclusive resources (Ctrl-click to select)",resources,s.resources()).show("Edit session",f->{
+    String speaker=f.get("Speaker");d.controller.reviseSession(id,new Session(s.id(),f.get("Title"),GuiInputs.enumeration(Session.Kind.class,f.get("Kind")),new TimeSlot(GuiInputs.date(f.get("Start")),GuiInputs.date(f.get("End"))),speaker.isBlank()?null:speaker,f.get("New space name (optional)").isBlank()?f.get("Space"):f.get("New space name (optional)"),java.util.stream.Stream.concat(GuiInputs.csv(f.get("Exclusive resources (Ctrl-click to select)")).stream(),GuiInputs.csv(f.get("Additional resource names (comma-separated)")).stream()).distinct().toList()));d.edited();
    });
   }));
   boolean draft=d.controller.hasScheduleDraft(id);
   var approve=Ui.button("Approve schedule",()->d.action(()->{if(Ui.confirm("Approve schedule?","Approve this draft after reviewing conflicts?"))d.background("Approving schedule",()->{d.controller.approveSchedule(id);return null;});}));approve.setDisable(!draft);
   var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard schedule draft?","Retain the approved schedule?"))d.controller.discardSchedule(id);}));discard.setDisable(!draft);
-  return Ui.page("Schedule & resources","Window: "+e.getDateTime()+" to "+e.getEndDateTime()+". Setup, breaks and teardown belong inside this window. Unknown availability blocks approval.",
-   Ui.row(window,Ui.button("Configure speaker",()->speaker(id)),Ui.button("Configure resource",()->resource(id))),
-   Ui.card(draft?"DRAFT schedule":exists?"APPROVED schedule":"No schedule yet",Ui.row(Ui.button("Generate agenda",()->d.background("Generating agenda",()->d.controller.buildSchedule(id))),edit,Ui.button("Validate schedule",()->d.validate(id,"schedule")),approve,discard),Ui.inspect(table,Object::toString),Ui.details(exists?d.diagnostics(id,"schedule"):"Generate a schedule after configuring the event window and resource availability.")),
-   Ui.card("Configured availability",Ui.details(Ui.lines("Speakers",e.getSpeakers())+"\nResources: "+e.getResourceAvailability())));
+  var availability=new VBox(14);for(Speaker speaker:e.getSpeakers())availability.getChildren().add(ResultViews.availability(names.speaker(speaker.id()),speaker.availability()));
+  e.getResourceAvailability().forEach((resource,slots)->availability.getChildren().add(ResultViews.availability(names.resource(resource),slots)));
+  if(availability.getChildren().isEmpty())availability.getChildren().add(Ui.note("No speakers or resource availability configured yet."));
+  return Ui.page("Schedule & resources","Build a chronological agenda. Setup, breaks and teardown stay inside the event window; unknown availability blocks approval.",
+   Ui.metrics(Ui.metric("Event starts",DisplayNames.date(e.getDateTime())),Ui.metric("Event ends",DisplayNames.date(e.getEndDateTime()))),
+   Ui.row(window,Ui.button("Configure speaker",()->chooseSpeaker(id,e,names)),Ui.button("Configure resource",()->chooseResource(id,e,names))),
+   Ui.card("Event agenda",Ui.badge(draft?"DRAFT":exists?"APPROVED":"NOT GENERATED"),Ui.row(Ui.button("Generate agenda",()->d.background("Generating agenda",()->d.controller.buildSchedule(id))),edit,Ui.button("Validate schedule",()->d.validate(id,"schedule")),approve,discard),Ui.inspectView(table,s->ResultViews.session(s,names)),ResultViews.warnings("Schedule review",exists?d.diagnostics(id,"schedule"):"Generate a schedule after configuring the event window and availability.",names)),
+   Ui.card("Configured availability",availability));
  }
- private void speaker(String id){new Ui.Form().field("Speaker ID (existing replaces profile)","").field("Name","").field("Availability (start/end per line)","").show("Configure speaker",f->{
-  String speakerId=GuiInputs.required(f.get("Speaker ID (existing replaces profile)"));boolean exists=d.session.active().getSpeakers().stream().anyMatch(s->s.id().equals(speakerId));
-  Speaker speaker=new Speaker(speakerId,f.get("Name"),GuiInputs.slots(f.get("Availability (start/end per line)")));
-  if(!exists||Ui.confirm("Replace speaker profile?","Replace availability for "+speakerId+"?")){d.controller.configureSpeaker(id,speaker);d.edited();}
- });}
- private void resource(String id){new Ui.Form().field("Resource ID (existing replaces availability)","").field("Availability (start/end per line)","").show("Configure resource",f->{
-  String resource=GuiInputs.required(f.get("Resource ID (existing replaces availability)"));var slots=GuiInputs.slots(f.get("Availability (start/end per line)"));
-  boolean exists=d.session.active().getResourceAvailability().containsKey(resource.toLowerCase(Locale.ROOT));
-  if(!exists||Ui.confirm("Replace resource availability?","Replace availability for "+resource+"?")){d.controller.configureResource(id,resource,slots);d.edited();}
- });}
+ private void chooseSpeaker(String id,Event event,DisplayNames names){
+  var options=new ArrayList<DisplayNames.Option>();options.add(new DisplayNames.Option("","New speaker"));for(Speaker s:event.getSpeakers())options.add(new DisplayNames.Option(s.id(),names.speaker(s.id())));
+  new Ui.Form().option("Speaker profile",options,"").show("Choose speaker",f->{String selected=f.get("Speaker profile");speaker(id,event.getSpeakers().stream().filter(s->s.id().equals(selected)).findFirst().orElse(null));});
+ }
+ private void speaker(String id,Speaker existing){
+  String speakerId=existing==null?UUID.randomUUID().toString():existing.id();
+  new Ui.Form().field("Name",existing==null?"":existing.name()).availability("Availability",existing==null?List.of():existing.availability()).technical("Speaker reference: "+speakerId).show("Configure speaker",f->{
+   Speaker speaker=new Speaker(speakerId,f.get("Name"),GuiInputs.slots(f.get("Availability")));
+   if(existing==null||Ui.confirm("Replace speaker profile?","Replace availability for "+existing.name()+"?")){d.controller.configureSpeaker(id,speaker);d.edited();}
+  });
+ }
+ private void chooseResource(String id,Event event,DisplayNames names){
+  var options=new ArrayList<DisplayNames.Option>();options.add(new DisplayNames.Option("","New resource"));options.addAll(names.resourceOptions(null));
+  new Ui.Form().option("Resource",options,"").show("Choose resource",f->{String selected=f.get("Resource");
+   var form=new Ui.Form();if(selected.isBlank())form.field("Resource name","");else form.hidden("Resource name",selected);
+   form.availability("Availability",event.getResourceAvailability().getOrDefault(selected,List.of())).show("Configure resource",values->{
+    String resource=GuiInputs.required(values.get("Resource name"));var slots=GuiInputs.slots(values.get("Availability"));
+    boolean exists=event.getResourceAvailability().containsKey(resource.toLowerCase(Locale.ROOT));
+    if(!exists||Ui.confirm("Replace resource availability?","Replace availability for "+names.resource(resource)+"?")){d.controller.configureResource(id,resource,slots);d.edited();}
+   });
+  });
+ }
 }

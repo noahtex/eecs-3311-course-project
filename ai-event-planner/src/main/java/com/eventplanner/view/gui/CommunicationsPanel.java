@@ -23,7 +23,7 @@ final class CommunicationsPanel {
   tone.valueProperty().addListener((o,a,b)->state.inputs.put("tone",b));
   var drafts=d.controller.listCommunications(id);var selection=Ui.choice(drafts);
   selection.setConverter(new StringConverter<>(){
-   public String toString(Communication c){return c==null?"":(c.approved()?"APPROVED":"DRAFT")+" | "+c.channel()+" | "+c.id();}
+   public String toString(Communication c){return c==null?"":"Draft "+(drafts.indexOf(c)+1)+" | "+c.channel()+" | "+c.tone()+" | "+(c.approved()?"APPROVED":"DRAFT");}
    public Communication fromString(String value){return null;}
   });
   Communication selected=drafts.stream().filter(c->c.id().equals(state.selectedCommunication)).findFirst().orElse(drafts.isEmpty()?null:drafts.getLast());
@@ -45,14 +45,17 @@ final class CommunicationsPanel {
   question.textProperty().addListener((o,a,b)->state.faqAnswer=null);
   String answer=state.faqAnswer!=null&&facts.equals(state.faqFacts)?state.faqAnswer:"Ask a question. Missing or unconfirmed facts will be identified explicitly.";
   return Ui.page("Communications & FAQ","Drafts use approved event facts. Review all planner edits before approval. Approval does not send or publish anything.",
-   Ui.card("Generate communication",Ui.row(channel,tone,Ui.button("Generate communication draft",()->{
+   Ui.card("Generate communication",Ui.row(Ui.field("Channel",channel),Ui.field("Tone",tone),Ui.button("Generate communication draft",()->{
     var c=channel.getValue();String t=tone.getValue();
     d.background("Generating communication draft",()->d.controller.generateCommunication(id,c,t),result->state.selectedCommunication=result.id());
    }))),
-   Ui.card("Stored communications",selection,Ui.note(selected==null?"No communication drafts yet.":"Saved status: "+(selected.approved()?"APPROVED":"DRAFT")+". Editing and saving returns it to DRAFT."),editor,Ui.row(save,approve)),
+   Ui.card("Stored communications",selection,Ui.badge(selected==null?"NO DRAFT":selected.approved()?"APPROVED":"DRAFT"),Ui.note("Editing and saving returns this communication to DRAFT."),editor,Ui.row(save,approve),Ui.technical(selected==null?"No communication selected.":selected.toString())),
    Ui.card("Attendee FAQ",Ui.row(question,Ui.button("Ask attendee FAQ",()->d.action(()->{
     String q=GuiInputs.required(question.getText());
     d.background("Answering attendee FAQ",()->d.controller.askFaq(id,q),result->{state.faqAnswer=result;state.faqFacts=facts;});
-   }))),Ui.details(answer)));
+   }))),faqAnswer(state.inputs.getOrDefault("faq",""),answer)));
+ }
+ private static Node faqAnswer(String question,String answer){
+  var view=new javafx.scene.layout.VBox(12,Ui.field("Your question",Ui.prose(question.isBlank()?"No question yet":question)),Ui.field("Event assistant",Ui.prose(answer)));view.getStyleClass().add("faq-answer");return view;
  }
 }

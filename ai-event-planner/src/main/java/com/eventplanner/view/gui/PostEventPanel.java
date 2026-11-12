@@ -10,7 +10,7 @@ final class PostEventPanel {
  private final Dashboard d;
  PostEventPanel(Dashboard d){this.d=d;}
  Node build(){
-  String id=d.id();var state=d.partB(id);Event event=d.session.active();PostEventData saved=event.getPostEventData();
+  String id=d.id();var state=d.partB(id);Event event=d.session.active();var names=new DisplayNames(event);PostEventData saved=event.getPostEventData();
   if(!state.outcomesLoaded){
    if(saved!=null){
     state.inputs.put("actualAttendance",saved.actualAttendance()==null?"":saved.actualAttendance().toString());
@@ -22,12 +22,11 @@ final class PostEventPanel {
   }
   var attendance=state.field("actualAttendance","Non-negative whole number; blank = UNKNOWN");
   var expenses=state.field("actualExpenses","Non-negative amount; blank = UNKNOWN");
-  var completed=state.field("completed","Completed approved task IDs, comma-separated");
-  var unfinished=state.field("unfinished","Unfinished approved task IDs, comma-separated");
+  var taskOutcomes=new TaskOutcomesInput(event.getTasks(),state,names);
   var organizer=state.area("organizer","One organizer feedback entry per line");
   var attendee=state.area("attendee","One attendee feedback entry per line");
   var problems=state.area("problems","One problem per line; blank = unrecorded");
-  java.util.function.Supplier<PostEventData> input=()->GuiInputs.postEventData(attendance.getText(),expenses.getText(),completed.getText(),unfinished.getText(),organizer.getText(),attendee.getText(),problems.getText());
+  java.util.function.Supplier<PostEventData> input=()->GuiInputs.postEventData(attendance.getText(),expenses.getText(),state.inputs.getOrDefault("completed",""),state.inputs.getOrDefault("unfinished",""),organizer.getText(),attendee.getText(),problems.getText());
   var analyze=Ui.button("Generate post-event analysis",()->d.action(()->{
    if(!input.get().equals(saved))throw new IllegalArgumentException("Save actual outcomes before generating analysis. The report uses saved outcomes only.");
    d.background("Analyzing post-event outcomes",()->d.controller.analyzePostEvent(id),result->state.selectedReport=-1);
@@ -39,13 +38,11 @@ final class PostEventPanel {
   });
   int selected=state.selectedReport>=0&&state.selectedReport<reports.size()?state.selectedReport:reports.size()-1;
   if(selected>=0)history.setValue(selected);history.setPromptText("No stored reports yet");
-  var reportText=Ui.details(selected<0?"Save actual outcomes, then generate an analysis. Reports remain in this session.":describe(reports.get(selected),event.getPlanningCurrency()));
-  reportText.setPrefRowCount(16);
-  history.valueProperty().addListener((o,a,b)->{if(b!=null){state.selectedReport=b;reportText.setText(describe(reports.get(b),event.getPlanningCurrency()));}});
+  var reportText=new javafx.scene.layout.VBox(14,selected<0?Ui.note("Save actual outcomes, then generate an analysis. Reports remain in this session."):ResultViews.report(reports.get(selected),event.getPlanningCurrency(),names));
+  history.valueProperty().addListener((o,a,b)->{if(b!=null){state.selectedReport=b;reportText.getChildren().setAll(ResultViews.report(reports.get(b),event.getPlanningCurrency(),names));}});
   return Ui.page("Post-Event Review","Blank actual attendance and expenses mean UNKNOWN, never zero. Save outcomes before generating analysis. Feedback entries remain attributed to their source.",
    Ui.card("Actual outcomes in "+event.getPlanningCurrency(),new Label("Actual attendance"),attendance,new Label("Actual expenses"),expenses,
-    Ui.details("Approved task IDs\n"+String.join("\n",event.getTasks().stream().map(t->t.id()+" | "+t.title()).toList())),
-    new Label("Completed task IDs"),completed,new Label("Unfinished task IDs"),unfinished,
+    Ui.card("Approved task outcomes",taskOutcomes),
     new Label("Organizer feedback"),organizer,new Label("Attendee feedback"),attendee,new Label("Problems encountered"),problems,
     Ui.row(Ui.button("Save actual outcomes",()->d.action(()->{
      PostEventData data=input.get();
