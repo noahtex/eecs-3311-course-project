@@ -8,6 +8,8 @@ import com.eventplanner.facade.EventPlanningFacade;
 import com.eventplanner.service.EventService;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -19,6 +21,25 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Requires a desktop display. No AI/Places requests are made. */
 @EnabledIfSystemProperty(named="gui.smoke",matches="true")
 class JavaFxSmokeTest {
+ private static java.util.stream.Stream<Node> nodes(Node root){
+  var children=root instanceof ScrollPane scroll?java.util.stream.Stream.of(scroll.getContent()):root instanceof Parent parent?parent.getChildrenUnmodifiable().stream():java.util.stream.Stream.<Node>empty();
+  return java.util.stream.Stream.concat(java.util.stream.Stream.of(root),children.flatMap(JavaFxSmokeTest::nodes));
+ }
+ private static Button button(Dashboard d,String text){return nodes(d.root()).filter(n->n instanceof Button b&&b.getText().equals(text)).map(n->(Button)n).findFirst().orElseThrow();}
+ private static Label status(Dashboard d){return (Label)((HBox)((BorderPane)d.root()).getBottom()).getChildren().getLast();}
+ private static void operation(Dashboard d,Runnable start) throws Exception {
+  var done=new CountDownLatch(1);
+  javafx.beans.value.ChangeListener<String> listener=(o,a,b)->{if(!d.busy())done.countDown();};
+  fx(()->{status(d).textProperty().addListener(listener);start.run();assertTrue(d.busy());return null;});
+  try{assertTrue(done.await(10,TimeUnit.SECONDS));fx(()->{assertTrue(status(d).getText().contains("completed"),status(d).getText());return null;});}
+  finally{fx(()->{status(d).textProperty().removeListener(listener);return null;});}
+ }
+ private static void acceptNextDialog(){Platform.runLater(()->{
+  for(var window:java.util.List.copyOf(javafx.stage.Window.getWindows()))if(window.getScene()!=null){
+   var pane=window.getScene().lookup(".dialog-pane");if(pane instanceof DialogPane dialog){((Button)dialog.lookupButton(ButtonType.OK)).fire();return;}
+  }
+  fail("Expected a confirmation dialog");
+ });}
  @BeforeAll static void startup() throws Exception {var ready=new CountDownLatch(1);Platform.startup(()->{Platform.setImplicitExit(false);ready.countDown();});assertTrue(ready.await(15,TimeUnit.SECONDS));}
  @AfterAll static void shutdown(){Platform.exit();}
  private static <T> T fx(Callable<T> action) throws Exception {var task=new FutureTask<>(action);Platform.runLater(task);return task.get(15,TimeUnit.SECONDS);}
@@ -81,6 +102,65 @@ class JavaFxSmokeTest {
    finally {finish.countDown();}
    assertTrue(cleaned.await(10,TimeUnit.SECONDS));
   } finally {release.countDown();fx(()->{dashboard.close();return null;});}
+ }
+
+ @Test void partBButtonsDelegateThroughBackendAndRetainEventScopedResults() throws Exception {
+  var replies=new java.util.ArrayDeque<String>(java.util.List.of(
+   "{\"changes\":{\"attendance\":\"150\"},\"ambiguities\":[]}",
+   "{\"affectedComponents\":[\"catering\"],\"implications\":[\"More meals needed\"],\"warnings\":[\"Confirm capacity\"],\"recommendations\":[\"Review resources\"]}",
+   "{\"changes\":{\"budget\":\"700\"},\"ambiguities\":[]}",
+   "{\"affectedComponents\":[\"budget\"],\"implications\":[\"Review allocations\"],\"warnings\":[],\"recommendations\":[\"Obtain quotes\"]}",
+   "{\"risk\":\"Speaker cancels\",\"impact\":\"Agenda gap\",\"proposedResponse\":\"Prepare a backup activity\",\"resources\":[\"Facilitator\"],\"assumptions\":[\"Availability unknown\"]}",
+   "{\"factOrder\":[\"name\",\"type\",\"dateTime\"],\"opening\":\"Hello friends!\",\"closing\":\"Join us!\"}",
+   "{\"executiveSummary\":\"Limited recorded evidence\",\"successes\":[],\"issues\":[],\"lessonsLearned\":[\"Record outcomes\"],\"recommendations\":[\"Collect feedback\"]}"
+  ));
+  var facade=new EventPlanningFacade(new EventService(),new EventPlanningAgent(prompt->{assertFalse(Platform.isFxApplicationThread());return replies.remove();}),q->{throw new AssertionError("No Places");},q->{throw new AssertionError("No catering");});
+  var cleaned=new CountDownLatch(1);
+  Dashboard d=fx(()->{
+   var session=new GuiSession(new EventPlanningController(facade));
+   var first=session.create("First","Social","Campus","2027-02-01T18:00","2027-02-01T21:00","80","1000");
+   session.create("Second","Social","Campus","2027-02-02T18:00","2027-02-02T21:00","80","1000");session.select(first.getId());
+   return new Dashboard(session,()->{facade.close();cleaned.countDown();});
+  });
+  try {
+   String first=fx(d::id);String second=fx(()->d.controller.listEvents().stream().filter(e->e.getName().equals("Second")).findFirst().orElseThrow().getId());
+   operation(d,()->{
+    button(d,"Scenario Simulator").fire();d.partB(first).inputs.put("scenario","Attendance increases to 150");d.refresh();
+    button(d,"Run simulation").fire();d.session.select(second);button(d,"Communications & FAQ").fire();
+   });
+   fx(()->{
+    assertEquals(second,d.id());assertNull(d.partB(second).simulation);assertNotNull(d.partB(first).simulation);
+    assertEquals(80,d.controller.viewEvent(first).getExpectedAttendance());
+    d.session.select(first);button(d,"Scenario Simulator").fire();
+    assertTrue(nodes(d.root()).anyMatch(n->n instanceof TextArea area&&area.getText().contains("HYPOTHETICAL — not applied")));
+    button(d,"Clear simulation").fire();assertNull(d.partB(first).simulation);assertEquals("",d.partB(first).inputs.get("scenario"));return null;
+   });
+   operation(d,()->{d.partB(first).inputs.put("change","Reduce budget to 700");button(d,"Plan Updates & Contingencies").fire();button(d,"Preview changes & impacts").fire();});
+   fx(()->{assertEquals(1000,d.session.active().getTotalBudget());assertEquals("700",d.controller.pendingChanges(first).changes().get("budget"));return null;});
+   operation(d,()->{acceptNextDialog();button(d,"Confirm Changes").fire();});
+   fx(()->{assertEquals(700,d.session.active().getTotalBudget());assertThrows(IllegalArgumentException.class,()->d.controller.pendingChanges(first));return null;});
+   operation(d,()->{d.partB(first).inputs.put("risk","Speaker cancels");d.refresh();button(d,"Generate contingency").fire();});
+   fx(()->{assertEquals(1,d.controller.listContingencies(first).size());return null;});
+   operation(d,()->{button(d,"Communications & FAQ").fire();button(d,"Generate communication draft").fire();});
+   String communication=fx(()->d.partB(first).selectedCommunication);
+   operation(d,()->{
+    nodes(d.root()).filter(n->n instanceof TextArea area&&!area.isDisabled()&&area.isEditable()).map(n->(TextArea)n).findFirst().orElseThrow().setText("Planner revised the draft");
+    button(d,"Save draft edits").fire();
+   });
+   fx(()->{assertEquals("Planner revised the draft",d.controller.viewCommunication(first,communication).text());assertFalse(d.controller.viewCommunication(first,communication).approved());return null;});
+   operation(d,()->{acceptNextDialog();button(d,"Approve draft").fire();});
+   fx(()->{assertTrue(d.controller.viewCommunication(first,communication).approved());return null;});
+   operation(d,()->{d.partB(first).inputs.put("faq","What is the ticket price?");d.refresh();button(d,"Ask attendee FAQ").fire();});
+   fx(()->{assertTrue(d.partB(first).faqAnswer.contains("not confirmed"));button(d,"Post-Event Review").fire();return null;});
+   operation(d,()->{acceptNextDialog();button(d,"Save actual outcomes").fire();});
+   fx(()->{assertNotNull(d.session.active().getPostEventData());assertNull(d.session.active().getPostEventData().actualAttendance());return null;});
+   operation(d,()->button(d,"Generate post-event analysis").fire());
+   fx(()->{
+    assertEquals(1,d.controller.viewPostEventReports(first).size());
+    assertTrue(nodes(d.root()).anyMatch(n->n instanceof TextArea area&&area.getText().contains("Actual attendance: UNKNOWN")));
+    assertTrue(replies.isEmpty());return null;
+   });
+  } finally {fx(()->{d.close();return null;});assertTrue(cleaned.await(10,TimeUnit.SECONDS));}
  }
 
 }

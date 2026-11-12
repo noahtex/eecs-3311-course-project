@@ -41,4 +41,19 @@ public final class GuiInputs {
   if(value.isBlank()) return null; if(value.equalsIgnoreCase("yes")) return true; if(value.equalsIgnoreCase("no")) return false;
   throw new IllegalArgumentException("Enter yes, no, or blank for unknown.");
  }
+ /** Blank actuals mean unknown; zero is a recorded outcome. Lists use the backend's existing fields. */
+ public static PostEventData postEventData(String attendance,String expenses,String completed,String unfinished,String organizer,String attendee,String problems){
+  Integer count=null;
+  if(!attendance.isBlank()){
+   try{if(!attendance.strip().matches("[0-9]+"))throw new IllegalArgumentException();count=integer(attendance);}
+   catch(IllegalArgumentException ex){throw new IllegalArgumentException("Actual attendance must be a non-negative whole number, or blank for unknown.");}
+  }
+  BigDecimal cost=null;
+  if(!expenses.isBlank()){
+   try{cost=money(expenses);}
+   catch(IllegalArgumentException ex){throw new IllegalArgumentException("Actual expenses must be a non-negative decimal amount, or blank for unknown.");}
+  }
+  return new PostEventData(count,cost,csv(completed),csv(unfinished),feedback(organizer),feedback(attendee),feedback(problems));
+ }
+ private static List<String> feedback(String value){return value.lines().map(String::strip).filter(s->!s.isEmpty()).toList();}
 }
