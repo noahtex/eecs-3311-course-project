@@ -207,12 +207,15 @@ public final class EventPlanningAgent implements AutoCloseable {
         var resources = data.putObject("resourceAvailability");
         event.getResourceAvailability().forEach((name, slots) -> addSlots(resources, name, slots));
         var blueprints = data.putArray("blueprints");
-        for (EventBlueprint blueprint : event.getBlueprints()) {
-            var node = blueprints.addObject().put("title", blueprint.title()).put("summary", blueprint.summary());
+        for (EventBlueprint blueprint : event.executionBlueprints()) {
+            var node = blueprints.addObject().put("id", blueprint.id()).put("title", blueprint.title()).put("summary", blueprint.summary());
             addStrings(node, "checklist", blueprint.checklist());
             addStrings(node, "agenda", blueprint.agenda());
             addStrings(node, "resources", blueprint.resources());
         }
+        data.put("blueprintStatus",event.getApprovedBlueprintId()==null
+                ? "No blueprints exist. Use event details, ideas and constraints only."
+                : "Only the approved blueprint is supplied as the execution plan.");
         var tasks = data.putArray("activeTasks");
         java.util.stream.Stream.concat(event.getTasks().stream(), otherWorkload.stream())
                 .filter(task -> task.status() != Task.Status.DONE).forEach(task -> tasks.addObject()

@@ -251,3 +251,5 @@ Milestone 4 (F07-F10) commands, architecture, approval boundaries and limitation
 
 
 JavaFX dashboard (Milestone 5, Part A): [launch, feature workflows and verification](MILESTONE5_PART_A_GUIDE.md).
+
+F02 execution blueprint: [selection, approval, CLI commands and legacy-save compatibility](F02_BLUEPRINT_SELECTION_GUIDE.md).

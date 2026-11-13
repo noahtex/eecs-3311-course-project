@@ -19,7 +19,7 @@ public final class PlanDataMapper {
   var team=new TeamData(t.getId(),t.getName(),members,t.getEvents().stream().map(Event::getId).toList());
   return new EventData(e.getId(),e.getName(),e.getType(),e.getLocation(),e.getDateTime(),e.getEndDateTime(),e.getExpectedAttendance(),e.getTotalBudget(),
    e.getPlanningCurrency(),e.getDietaryRequirements(),e.getCateringNeeds(),e.requiresWheelchairEntrance(),e.getRequiredEquipment(),team,e.getOrganizerIdeas(),e.getConstraints(),e.getConcepts(),e.getBlueprints(),
-   e.getTasks(),e.getSchedule(),e.getBudget(),e.getSpeakers(),e.getResourceAvailability(),e.getVenueOptions(),e.getVenueComparisons(),e.getReviewWarnings(),e.getContingencies(),e.getCommunications(),e.getPostEventData(),e.getReports());
+   e.getTasks(),e.getSchedule(),e.getBudget(),e.getSpeakers(),e.getResourceAvailability(),e.getVenueOptions(),e.getVenueComparisons(),e.getReviewWarnings(),e.getContingencies(),e.getCommunications(),e.getPostEventData(),e.getReports(),e.getSelectedBlueprintId(),e.getApprovedBlueprintId());
  }
  public static List<Event> restore(PlanData data){
   var events=new LinkedHashMap<String,Event>();var teams=new LinkedHashMap<String,PlanningTeam>();var teamData=new HashMap<String,TeamData>();
@@ -45,6 +45,7 @@ public final class PlanDataMapper {
    if(saved.end()!=null)event.setEndDateTime(saved.end());
    event.configureBudgetNeeds(saved.currency(),saved.dietaryRequirements(),saved.cateringNeeds());event.configureVenueNeeds(saved.wheelchairEntranceRequired(),saved.requiredEquipment());
    event.restoreOrganizerIdeas(saved.ideas());saved.constraints().forEach(event::addConstraint);event.addConcepts(saved.concepts());event.addBlueprints(saved.blueprints());
+   event.restoreBlueprintSelection(saved.selectedBlueprintId(),saved.approvedBlueprintId());
    event.storeTasks(saved.approvedTasks());if(saved.approvedSchedule()!=null)event.storeSchedule(saved.approvedSchedule());if(saved.approvedBudget()!=null)event.storeBudget(saved.approvedBudget());
    saved.speakers().forEach(event::putSpeaker);saved.resources().forEach(event::putResourceAvailability);event.addVenueOptions(saved.venues());event.storeVenueComparisons(saved.venueComparisons());
    saved.reviewWarnings().forEach(event::flagReview);saved.contingencies().forEach(event::addContingency);saved.communications().forEach(event::storeCommunication);

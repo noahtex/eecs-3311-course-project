@@ -103,4 +103,6 @@ public class EventPlanningController {
     }
     public List<EventBlueprint> listBlueprints(String eventId) { return facade.listBlueprints(eventId); }
     public EventBlueprint viewBlueprint(String eventId, String blueprintId) { return facade.viewBlueprint(eventId, blueprintId); }
+    public void selectBlueprint(String eventId,String blueprintId) { facade.selectBlueprint(eventId,blueprintId); }
+    public void approveBlueprint(String eventId) { facade.approveBlueprint(eventId); }
 }

@@ -25,7 +25,8 @@ public record PlanData(int schemaVersion,List<EventData> events,Map<String,Draft
   TeamData team,List<EventIdea> ideas,List<String> constraints,List<EventConcept> concepts,List<EventBlueprint> blueprints,
   List<Task> approvedTasks,Schedule approvedSchedule,Budget approvedBudget,List<Speaker> speakers,Map<String,List<TimeSlot>> resources,
   List<VenueOption> venues,List<VenueComparison> venueComparisons,Map<String,List<String>> reviewWarnings,
-  List<ContingencyPlan> contingencies,List<Communication> communications,PostEventData actuals,List<PostEventReport> reports){
+  List<ContingencyPlan> contingencies,List<Communication> communications,PostEventData actuals,List<PostEventReport> reports,
+  String selectedBlueprintId,String approvedBlueprintId){
   public EventData {
    Objects.requireNonNull(team);Objects.requireNonNull(start);
    dietaryRequirements=List.copyOf(dietaryRequirements);requiredEquipment=List.copyOf(requiredEquipment);ideas=List.copyOf(ideas);constraints=List.copyOf(constraints);

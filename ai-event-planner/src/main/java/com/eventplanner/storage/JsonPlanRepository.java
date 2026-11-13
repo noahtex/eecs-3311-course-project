@@ -35,7 +35,18 @@ public class JsonPlanRepository implements PlanRepository {
   try{
    byte[] bytes=contentsOrNull();
    if(bytes==null){loaded=true;expectedDigest=null;return Optional.empty();}
-   PlanData data=json.readValue(bytes,PlanData.class);
+   // Preserve decimal precision and scale while adding legacy defaults in the tree.
+   var document=json.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+           .without(com.fasterxml.jackson.databind.cfg.JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES).readTree(bytes);
+   // Additive v1 compatibility: only these new optional references may be absent.
+   // Keep strict missing-property/type validation for every existing field.
+   if(document!=null && document.path("events").isArray())for(var event:document.path("events")) {
+    if(event instanceof com.fasterxml.jackson.databind.node.ObjectNode object) {
+     if(!object.has("selectedBlueprintId"))object.putNull("selectedBlueprintId");
+     if(!object.has("approvedBlueprintId"))object.putNull("approvedBlueprintId");
+    }
+   }
+   PlanData data=json.treeToValue(document,PlanData.class);
    if(data==null)throw new IllegalArgumentException("Empty document.");
    PlanDataMapper.restore(data); // Semantic validation before allowing any writes.
    expectedDigest=digest(bytes);loaded=true;return Optional.of(data);

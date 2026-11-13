@@ -19,7 +19,7 @@ final class TasksPanel {
   var discard=Ui.button("Discard draft",()->d.action(()->{if(Ui.confirm("Discard task draft?","Retain the previously approved task plan?"))d.background("Discarding task draft",()->{d.controller.discardTasks(id);return null;});}));discard.setDisable(!draft);
   return Ui.page("Tasks & planning team","Review workloads, assignments and availability. Changes remain drafts until you explicitly approve them.",
    Ui.card("Planning team",Ui.row(Ui.button("Add team member",()->member(id,null)),Ui.button("Edit selected member",()->d.action(()->member(id,Ui.selected(members))))),Ui.inspectView(members,u->ResultViews.member(u,names))),
-   Ui.card("Task plan",Ui.badge(draft?"DRAFT":"APPROVED"),Ui.row(Ui.button("Generate task proposal",()->d.background("Generating tasks",()->d.controller.generateTasks(id))),edit,status,Ui.button("Validate tasks",()->d.validate(id,"tasks")),approve,discard),Ui.inspectView(tasks,t->ResultViews.task(t,names)),ResultViews.warnings("Assignment review",d.diagnostics(id,"tasks"),names)));
+   Ui.card("Task plan",Ui.badge(draft?"DRAFT":"APPROVED"),Ui.row(Ui.button("Generate task proposal",()->d.background("Generating tasks",()->d.controller.generateTasks(id))),edit,status,Ui.button("Validate tasks",()->d.validate(id,"tasks")),approve,discard),Ui.inspectView(tasks,t->ResultViews.task(t,names)),ResultViews.warnings("Assignment review",d.diagnostics(id,"tasks"),names),ResultViews.warnings("Execution plan review",Ui.lines("Review",d.session.active().getReviewWarnings().getOrDefault("tasks",List.of())),names)));
  }
  private void member(String id,User existing){
   var u=existing;String memberId=u==null?UUID.randomUUID().toString():u.getId();

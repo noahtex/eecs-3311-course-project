@@ -152,10 +152,10 @@ class PersistenceTest {
   var responses=new ArrayDeque<>(List.of(com.eventplanner.support.PlanningFixtures.concepts(event).toString(),com.eventplanner.support.PlanningFixtures.blueprints().toString(),com.eventplanner.support.ExecutionFixtures.tasksJson("alex").toString(),com.eventplanner.support.ExecutionFixtures.scheduleJson().toString(),com.eventplanner.support.CommercialFixtures.budgetJson().toString()));
   String conceptId,blueprintId,taskId,scheduleId,budgetId;
   try(var f=new EventPlanningFacade(events,new EventPlanningAgent(p->responses.remove()),q->com.eventplanner.support.CommercialFixtures.providers(),q->com.eventplanner.support.CommercialFixtures.providers(),new JsonPlanRepository(directory))){
-   conceptId=f.fuseIdeas(id).getFirst().id();blueprintId=f.generateBlueprints(id,conceptId,"community").getFirst().id();taskId=f.generateTasks(id).getFirst().id();scheduleId=f.buildSchedule(id).id();budgetId=f.generateBudget(id,"budget").id();assertTrue(responses.isEmpty());
+   conceptId=f.fuseIdeas(id).getFirst().id();blueprintId=f.generateBlueprints(id,conceptId,"community").getFirst().id();f.selectBlueprint(id,blueprintId);f.approveBlueprint(id);taskId=f.generateTasks(id).getFirst().id();scheduleId=f.buildSchedule(id).id();budgetId=f.generateBudget(id,"budget").id();assertTrue(responses.isEmpty());
   }
   try(var f=open()){
-   assertEquals(conceptId,f.listConcepts(id).getFirst().id());assertEquals(blueprintId,f.listBlueprints(id).getFirst().id());assertEquals(taskId,f.listTasks(id).getFirst().id());assertEquals(scheduleId,f.viewSchedule(id).id());assertEquals(budgetId,f.viewBudget(id).id());
+   assertEquals(conceptId,f.listConcepts(id).getFirst().id());assertEquals(blueprintId,f.listBlueprints(id).getFirst().id());assertEquals(blueprintId,f.viewEvent(id).getApprovedBlueprintId());assertEquals(taskId,f.listTasks(id).getFirst().id());assertEquals(scheduleId,f.viewSchedule(id).id());assertEquals(budgetId,f.viewBudget(id).id());
    assertTrue(f.hasTaskDraft(id));assertTrue(f.hasScheduleDraft(id));assertTrue(f.hasBudgetDraft(id));assertTrue(f.viewEvent(id).getTasks().isEmpty());assertNull(f.viewEvent(id).getSchedule());assertNull(f.viewEvent(id).getBudget());
   }
  }

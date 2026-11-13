@@ -28,6 +28,7 @@ final class SchedulePanel {
    Ui.metrics(Ui.metric("Event starts",DisplayNames.date(e.getDateTime())),Ui.metric("Event ends",DisplayNames.date(e.getEndDateTime()))),
    Ui.row(window,Ui.button("Configure speaker",()->chooseSpeaker(id,e,names)),Ui.button("Configure resource",()->chooseResource(id,e,names))),
    Ui.card("Event agenda",Ui.badge(draft?"DRAFT":exists?"APPROVED":"NOT GENERATED"),Ui.row(Ui.button("Generate agenda",()->d.background("Generating agenda",()->d.controller.buildSchedule(id))),edit,Ui.button("Validate schedule",()->d.validate(id,"schedule")),approve,discard),Ui.inspectView(table,s->ResultViews.session(s,names)),ResultViews.warnings("Schedule review",exists?d.diagnostics(id,"schedule"):"Generate a schedule after configuring the event window and availability.",names)),
+   ResultViews.warnings("Execution plan review",Ui.lines("Review",e.getReviewWarnings().getOrDefault("schedule",List.of())),names),
    Ui.card("Configured availability",availability));
  }
  private void chooseSpeaker(String id,Event event,DisplayNames names){

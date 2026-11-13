@@ -42,6 +42,8 @@ public class EventPlanningCLI {
                         output.println("ideas add <eventId> | ideas list <eventId> | ideas fuse <eventId> | concepts list <eventId>");
                         output.println("constraints add <eventId> | constraints list <eventId>");
                         output.println("blueprint generate <eventId> <conceptId> | blueprint list <eventId> | blueprint view <eventId> <blueprintId>");
+                        output.println("blueprint select <eventId> <blueprintId> | blueprint approve <eventId> (explicit yes required)");
+                        output.println("Tasks/schedules use only the approved blueprint. With no blueprints, event-details-only generation is available; unapproved alternatives must be approved first.");
                         milestoneHelp();
                         adaptiveHelp();
                         output.println("budget generate/view/validate/approve/discard <eventId> | budget edit <eventId> <itemId>");
@@ -98,10 +100,26 @@ public class EventPlanningCLI {
                     } else if (parts.length == 3 && parts[0].equals("blueprint") && parts[1].equals("list")) {
                         var blueprints = controller.listBlueprints(parts[2]);
                         if (blueprints.isEmpty()) output.println("No blueprints. Generate blueprints from a concept first.");
+                        displayBlueprintSelection(parts[2]);
                         blueprints.forEach(blueprint -> output.println(blueprint.id() + " | " + blueprint.title()
-                                + " | concept: " + blueprint.conceptId() + " | priority: " + blueprint.priority()));
+                                + " | concept: " + blueprint.conceptId() + " | priority: " + blueprint.priority()
+                                + " | " + blueprintStatus(parts[2],blueprint.id())));
                     } else if (parts.length == 4 && parts[0].equals("blueprint") && parts[1].equals("view")) {
                         displayBlueprint(controller.viewBlueprint(parts[2], parts[3]));
+                        output.println("Execution status: "+blueprintStatus(parts[2],parts[3]));
+                    } else if (parts.length == 4 && parts[0].equals("blueprint") && parts[1].equals("select")) {
+                        controller.selectBlueprint(parts[2],parts[3]);
+                        displayBlueprintSelection(parts[2]);
+                        output.println("Selection is pending. Use blueprint approve <eventId> to approve it for execution.");
+                    } else if (parts.length == 3 && parts[0].equals("blueprint") && parts[1].equals("approve")) {
+                        Event event=controller.viewEvent(parts[2]);
+                        if(event.getSelectedBlueprintId()==null)throw new IllegalArgumentException("Select a blueprint before approving it.");
+                        displayBlueprint(controller.viewBlueprint(parts[2],event.getSelectedBlueprintId()));
+                        if(read("Approve this selected blueprint for execution? Existing plans are retained for review. Type yes: ").equalsIgnoreCase("yes")) {
+                            controller.approveBlueprint(parts[2]);
+                            output.println("Blueprint approved for execution. Other alternatives retained; existing tasks/schedules require review.");
+                        } else output.println("Approval cancelled; current execution blueprint unchanged.");
+                        displayBlueprintSelection(parts[2]);
                     } else if (adaptiveCommand(parts)) {
                         // F07-F10 workflows.
                     } else if (commercialCommand(parts)) {
@@ -480,6 +498,8 @@ public class EventPlanningCLI {
     }
 
     private void showTasks(String eventId) {
+        var review=controller.viewEvent(eventId).getReviewWarnings().getOrDefault("tasks",List.of());
+        if(!review.isEmpty())showIssues(review);
         output.println(controller.hasTaskDraft(eventId) ? "DRAFT task plan (not approved)" : "APPROVED tasks");
         var tasks = controller.listTasks(eventId);
         if (tasks.isEmpty()) output.println("No tasks. Use tasks generate <eventId>.");
@@ -490,6 +510,8 @@ public class EventPlanningCLI {
         showIssues(controller.taskWarnings(eventId));
     }
     private void showSchedule(String eventId) {
+        var review=controller.viewEvent(eventId).getReviewWarnings().getOrDefault("schedule",List.of());
+        if(!review.isEmpty())showIssues(review);
         Schedule schedule = controller.viewSchedule(eventId);
         output.println((controller.hasScheduleDraft(eventId) ? "DRAFT" : "APPROVED") + " schedule " + schedule.id());
         schedule.sessions().stream().sorted(java.util.Comparator.comparing(session -> session.slot().start()))
@@ -631,6 +653,18 @@ public class EventPlanningCLI {
         displayItems("Checklist", blueprint.checklist());
         displayItems("Assumptions", blueprint.assumptions());
         displayItems("Feasibility warnings", blueprint.feasibilityWarnings());
+    }
+
+    private String blueprintStatus(String eventId,String blueprintId) {
+        Event event=controller.viewEvent(eventId);
+        if(blueprintId.equals(event.getApprovedBlueprintId()))return "APPROVED FOR EXECUTION";
+        if(blueprintId.equals(event.getSelectedBlueprintId()))return "SELECTED - awaiting approval";
+        return "Alternative only";
+    }
+    private void displayBlueprintSelection(String eventId) {
+        Event event=controller.viewEvent(eventId);
+        output.println("Approved execution blueprint: "+(event.getApprovedBlueprint()==null?"None":event.getApprovedBlueprint().title()+" | "+event.getApprovedBlueprintId()));
+        output.println("Selected for approval: "+(event.getSelectedBlueprintId()==null?"None":controller.viewBlueprint(eventId,event.getSelectedBlueprintId()).title()+" | "+event.getSelectedBlueprintId()));
     }
 
     private void displayItems(String label, java.util.List<String> items) {

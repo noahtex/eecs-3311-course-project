@@ -70,6 +70,7 @@ public class Event {
         copy.speakers.putAll(speakers); copy.resourceAvailability.putAll(resourceAvailability);
         copy.tasks=tasks; copy.schedule=schedule; copy.ideas.addAll(ideas); copy.constraints.addAll(constraints);
         copy.concepts.addAll(concepts); copy.blueprints.addAll(blueprints);
+        copy.selectedBlueprintId=selectedBlueprintId; copy.approvedBlueprintId=approvedBlueprintId;
         for(User user: planningTeam.getMembers()) {
             User member=new User(user.getId(),user.getName(),user.getEmail(),user.getRole());
             member.configurePlanning(user.getSkills(),user.getPreferences(),user.getAvailability(),user.getExistingWorkloadHours(),user.getCapacityHours());
@@ -143,6 +144,8 @@ public class Event {
     private final List<String> constraints = new ArrayList<>();
     private final List<EventConcept> concepts = new ArrayList<>();
     private final List<EventBlueprint> blueprints = new ArrayList<>();
+    private String selectedBlueprintId;
+    private String approvedBlueprintId;
 
     public Event(String id, String name, String type,
             String location, LocalDateTime dateTime,
@@ -216,6 +219,39 @@ public class Event {
     public List<String> getConstraints() { return List.copyOf(constraints); }
     public List<EventConcept> getConcepts() { return List.copyOf(concepts); }
     public List<EventBlueprint> getBlueprints() { return List.copyOf(blueprints); }
+    public String getSelectedBlueprintId() { return selectedBlueprintId; }
+    public String getApprovedBlueprintId() { return approvedBlueprintId; }
+    public EventBlueprint getApprovedBlueprint() {
+        return approvedBlueprintId==null?null:requireBlueprint(approvedBlueprintId);
+    }
+    private EventBlueprint requireBlueprint(String blueprintId) {
+        String checked=PlanningValues.text(blueprintId,"Blueprint ID");
+        return blueprints.stream().filter(b->b.id().equals(checked)).findFirst()
+                .orElseThrow(()->new IllegalArgumentException("Select a blueprint belonging to this event."));
+    }
+    /** A pending selection never replaces the currently approved execution blueprint. */
+    public void selectBlueprint(String blueprintId) { selectedBlueprintId=requireBlueprint(blueprintId).id(); }
+    public void approveSelectedBlueprint() {
+        if(selectedBlueprintId==null)throw new IllegalArgumentException("Select a blueprint before approving it.");
+        String next=requireBlueprint(selectedBlueprintId).id();
+        if(next.equals(approvedBlueprintId))return;
+        approvedBlueprintId=next;
+        if(!tasks.isEmpty())flagReview("tasks",List.of("Approved blueprint changed. Review existing tasks against the new execution blueprint; tasks were retained."));
+        if(schedule!=null)flagReview("schedule",List.of("Approved blueprint changed. Review the existing schedule against the new execution blueprint; schedule was retained."));
+    }
+    /** Restore references without replaying approval or changing persisted review warnings. */
+    public void restoreBlueprintSelection(String selectedId,String approvedId) {
+        if(selectedId!=null)requireBlueprint(selectedId);
+        if(approvedId!=null)requireBlueprint(approvedId);
+        selectedBlueprintId=selectedId; approvedBlueprintId=approvedId;
+    }
+    /** Pre-blueprint events retain event-details-only generation; alternatives require approval. */
+    public List<EventBlueprint> executionBlueprints() {
+        EventBlueprint approved=getApprovedBlueprint();
+        if(approved!=null)return List.of(approved);
+        if(!blueprints.isEmpty())throw new IllegalArgumentException("Select and approve one blueprint before generating tasks or a schedule. Use Blueprints or blueprint select / blueprint approve.");
+        return List.of();
+    }
 
     public void addConcepts(List<EventConcept> generated) {
         concepts.addAll(List.copyOf(generated));

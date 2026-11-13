@@ -393,6 +393,20 @@ public class EventPlanningFacade implements AutoCloseable {
 
     public List<EventBlueprint> listBlueprints(String eventId) { return eventService.listBlueprints(eventId); }
     public EventBlueprint viewBlueprint(String eventId, String blueprintId) { return eventService.getBlueprint(eventId, blueprintId); }
+    public void selectBlueprint(String eventId,String blueprintId) {
+        mutate(()->{viewEvent(eventId).selectBlueprint(blueprintId);return null;});
+    }
+    public void approveBlueprint(String eventId) {
+        mutate(()->{
+            Event event=viewEvent(eventId);String before=event.getApprovedBlueprintId();
+            event.approveSelectedBlueprint();
+            if(!Objects.equals(before,event.getApprovedBlueprintId())) {
+                if(taskDrafts.containsKey(event))event.flagReview("tasks",List.of("Approved blueprint changed. Review the retained task draft and approved tasks before approval."));
+                if(scheduleDrafts.containsKey(event))event.flagReview("schedule",List.of("Approved blueprint changed. Review the retained schedule draft and approved schedule before approval."));
+            }
+            return null;
+        });
+    }
 
     private static String required(String value, String field) {
         if (value == null || value.isBlank()) {

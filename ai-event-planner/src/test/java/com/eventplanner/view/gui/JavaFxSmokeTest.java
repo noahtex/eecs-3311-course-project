@@ -44,6 +44,49 @@ class JavaFxSmokeTest {
  @AfterAll static void shutdown(){Platform.exit();}
  private static <T> T fx(Callable<T> action) throws Exception {var task=new FutureTask<>(action);Platform.runLater(task);return task.get(15,TimeUnit.SECONDS);}
  private EventPlanningFacade facade(){return new EventPlanningFacade(new EventService(),new EventPlanningAgent(p->{throw new AssertionError("No AI during UI smoke test");}),q->{throw new AssertionError("No Places during UI smoke test");},q->{throw new AssertionError("No external requests");});}
+ @Test void blueprintSelectionAndApprovalButtonsKeepAlternativesAndFlagRetainedPlans() throws Exception {
+  var event=com.eventplanner.support.ExecutionFixtures.event();
+  var alternatives=com.eventplanner.support.BlueprintFixtures.addAlternatives(event);
+  var existingTasks=java.util.List.of(com.eventplanner.support.ExecutionFixtures.task("existing","alex"));
+  var existingSchedule=com.eventplanner.support.ExecutionFixtures.schedule();event.storeTasks(existingTasks);event.storeSchedule(existingSchedule);
+  var events=new EventService();events.createEvent(event);
+  var facade=new EventPlanningFacade(events,new EventPlanningAgent(p->{throw new AssertionError("No AI for blueprint approval");}),q->{throw new AssertionError("No Places");},q->{throw new AssertionError("No catering");});
+  var cleaned=new CountDownLatch(1);
+  Dashboard d=fx(()->{var session=new GuiSession(new EventPlanningController(facade));session.select(event.getId());var dashboard=new Dashboard(session,()->{facade.close();cleaned.countDown();});button(dashboard,"Blueprints").fire();return dashboard;});
+  try {
+   fx(()->{assertTrue(button(d,"Approve selected blueprint").isDisabled());return null;});
+   operation(d,()->button(d,"Select blueprint").fire());
+   fx(()->{
+    assertEquals(alternatives.getFirst().id(),event.getSelectedBlueprintId());assertNull(event.getApprovedBlueprintId());
+    assertTrue(labels(d.root()).contains("Selected for approval: Quiet workshop"));return null;
+   });
+   operation(d,()->{acceptNextDialog();button(d,"Approve selected blueprint").fire();});
+   fx(()->{
+    assertEquals(alternatives.getFirst(),event.getApprovedBlueprint());assertTrue(labels(d.root()).contains("Approved: Quiet workshop"));
+    assertTrue(button(d,"Approve selected blueprint").isDisabled());
+    @SuppressWarnings("unchecked") var table=(TableView<com.eventplanner.model.EventBlueprint>)nodes(d.root()).filter(n->n instanceof TableView<?>).findFirst().orElseThrow();
+    table.getSelectionModel().select(alternatives.getLast());return null;
+   });
+   operation(d,()->button(d,"Select blueprint").fire());
+   fx(()->{assertEquals(alternatives.getFirst(),event.getApprovedBlueprint());assertEquals(alternatives.getLast().id(),event.getSelectedBlueprintId());return null;});
+   // Cancelling approval must leave the previous execution blueprint active.
+   fx(()->{
+    Platform.runLater(()->{
+     for(var window:java.util.List.copyOf(javafx.stage.Window.getWindows()))if(window.getScene()!=null){var pane=window.getScene().lookup(".dialog-pane");if(pane instanceof DialogPane dialog){((Button)dialog.lookupButton(ButtonType.CANCEL)).fire();return;}}
+     fail("Expected blueprint approval dialog");
+    });
+    button(d,"Approve selected blueprint").fire();assertFalse(d.busy());assertEquals(alternatives.getFirst(),event.getApprovedBlueprint());return null;
+   });
+   operation(d,()->{acceptNextDialog();button(d,"Approve selected blueprint").fire();});
+   fx(()->{
+    assertEquals(alternatives.getLast(),event.getApprovedBlueprint());assertEquals(alternatives,event.getBlueprints());
+    assertEquals(existingTasks,event.getTasks());assertSame(existingSchedule,event.getSchedule());
+    assertTrue(labels(d.root()).contains("Approved: Loud concert"));
+    button(d,"Tasks & team").fire();assertTrue(labels(d.root()).contains("Approved blueprint changed"));
+    button(d,"Schedule").fire();assertTrue(labels(d.root()).contains("Approved blueprint changed"));return null;
+   });
+  } finally {fx(()->{d.close();return null;});assertTrue(cleaned.await(10,TimeUnit.SECONDS));}
+ }
  @Test void bothPriorityControlsDisplayDescriptionsAndRetainStrategyIdentifiers() throws Exception {try(var facade=facade()){
   fx(()->{var session=new GuiSession(new EventPlanningController(facade));session.create("Priority test","Social","Campus","2027-02-01T18:00","2027-02-01T21:00","80","1000");
    var dashboard=new Dashboard(session);try{
