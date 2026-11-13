@@ -1,7 +1,6 @@
 package com.eventplanner.view.gui;
 import com.eventplanner.model.*;
 import javafx.scene.Node;
-import javafx.scene.control.*;
 final class EventsPanel {
  private final Dashboard d; EventsPanel(Dashboard d){this.d=d;}
  Node build(){

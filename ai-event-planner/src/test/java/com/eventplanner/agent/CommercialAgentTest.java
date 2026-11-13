@@ -8,15 +8,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static com.eventplanner.support.CommercialFixtures.*;
 import static com.eventplanner.support.ExecutionFixtures.event;
 
 class CommercialAgentTest {
+    private final java.util.List<EventPlanningAgent> agents = new java.util.ArrayList<>();
+    private EventPlanningAgent agent(com.eventplanner.ai.AIModel model) {
+        var agent = new EventPlanningAgent(model);
+        agents.add(agent);
+        return agent;
+    }
+    @AfterEach void closeAgents() {
+        // Agents own their models; do not close those models separately.
+        agents.forEach(EventPlanningAgent::close);
+    }
+
     @Test void preservesDecimalMoneyWithoutBinaryFloatingPointConversion() {
         var output = budgetJson();
         ((ObjectNode) output.path("items").get(0)).put("unitCost", amount("123456789012345.67"));
-        var budget = new EventPlanningAgent(prompt -> output.toString()).planBudgetAndCatering(event(), providers());
+        var budget = agent(prompt -> output.toString()).planBudgetAndCatering(event(), providers());
         assertEquals(amount("123456789012345.67"), budget.items().get(0).unitCost());
     }
     @Test void budgetIncludesDietaryContextProviderEvidenceAndPriorityAndForcesEstimates() {
@@ -24,7 +36,7 @@ class CommercialAgentTest {
         var output = budgetJson();
         ((ObjectNode) output.path("catering").get(0)).put("providerId", "provider-1");
         var model = new FakeAIModel(prompt -> output.toString());
-        var agent = new EventPlanningAgent(model); agent.setPlanningStrategy(new CommunityPriorityStrategy());
+        var agent = agent(model); agent.setPlanningStrategy(new CommunityPriorityStrategy());
         Budget budget = agent.planBudgetAndCatering(event, providers());
         assertEquals("community", budget.priority());
         assertEquals(2, budget.items().size());
@@ -47,24 +59,24 @@ class CommercialAgentTest {
         var invented = budgetJson(); ((ObjectNode) invented.path("catering").get(0)).put("providerId", "invented"); invalid.add(invented);
         for (var output : invalid) {
             var model = new FakeAIModel(prompt -> output.toString());
-            assertThrows(PlanningException.class, () -> new EventPlanningAgent(model).planBudgetAndCatering(event(), providers()));
+            assertThrows(PlanningException.class, () -> agent(model).planBudgetAndCatering(event(), providers()));
             assertEquals(2, model.prompts.size());
         }
     }
     @Test void retriesMalformedBudgetOnceAndDoesNotRetryTransportFailure() {
         var count = new AtomicInteger();
         var model = new FakeAIModel(prompt -> count.getAndIncrement() == 0 ? "not JSON" : budgetJson().toString());
-        assertNotNull(new EventPlanningAgent(model).planBudgetAndCatering(event(), providers()));
+        assertNotNull(agent(model).planBudgetAndCatering(event(), providers()));
         assertEquals(2, model.prompts.size());
         var failed = new FakeAIModel(prompt -> { throw new PlanningException("Transport unavailable"); });
-        assertThrows(PlanningException.class, () -> new EventPlanningAgent(failed).planBudgetAndCatering(event(), providers()));
+        assertThrows(PlanningException.class, () -> agent(failed).planBudgetAndCatering(event(), providers()));
         assertEquals(1, failed.prompts.size());
     }
     @Test void comparisonsUseEveryRealCandidateAndPreserveDeterministicScoresAndEvidence() {
         var event = event(); event.configureVenueNeeds(true, List.of("projector"));
         event.addVenueOptions(List.of(unknownVenue("unknown"), knownVenue("known")));
         var model = new FakeAIModel(prompt -> comparisons(event.getVenueOptions()).toString());
-        var result = new EventPlanningAgent(model).compareVenues(event);
+        var result = agent(model).compareVenues(event);
         assertEquals("known", result.get(0).venueId());
         assertTrue(model.prompts.get(0).contains("PLANNER_CONFIRMED"));
         assertTrue(model.prompts.get(0).contains("UNKNOWN"));
@@ -76,11 +88,11 @@ class CommercialAgentTest {
         for (String output : List.of("{}", "{\"comparisons\":[]}",
                 "{\"comparisons\":[{\"venueId\":\"invented\",\"analysis\":\"text\",\"tradeOffs\":[\"x\"]}]}")) {
             var model = new FakeAIModel(prompt -> output);
-            assertThrows(PlanningException.class, () -> new EventPlanningAgent(model).compareVenues(event));
+            assertThrows(PlanningException.class, () -> agent(model).compareVenues(event));
             assertEquals(2, model.prompts.size());
         }
         var duplicate = comparisons(event.getVenueOptions());
         ((ObjectNode) duplicate.path("comparisons").get(1)).put("venueId", "known");
-        assertThrows(PlanningException.class, () -> new EventPlanningAgent(prompt -> duplicate.toString()).compareVenues(event));
+        assertThrows(PlanningException.class, () -> agent(prompt -> duplicate.toString()).compareVenues(event));
     }
 }

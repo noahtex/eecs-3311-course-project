@@ -10,15 +10,26 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static com.eventplanner.support.CommercialFixtures.*;
 import static com.eventplanner.support.ExecutionFixtures.event;
 
 class CommercialWorkflowTest {
+    private final java.util.List<EventPlanningFacade> facades = new java.util.ArrayList<>();
+    private EventPlanningFacade own(EventPlanningFacade facade) {
+        facades.add(facade);
+        return facade;
+    }
+    @AfterEach void closeFacades() {
+        // Each facade owns its agent, tools and repository, but not the shared EventService.
+        facades.forEach(EventPlanningFacade::close);
+    }
+
     @Test void budgetDraftApprovalEditingAndRejectedApprovalPreserveApprovedState() {
         var event = event(); var service = new EventService(); service.createEvent(event);
-        var controller = new EventPlanningController(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> budgetJson().toString()),
-                query -> providers(), query -> providers()));
+        var controller = new EventPlanningController(own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> budgetJson().toString()),
+                query -> providers(), query -> providers())));
         controller.configureBudgetNeeds(event.getId(), "CAD", List.of("vegetarian"), "Refreshments");
         Budget draft = controller.generateBudget(event.getId(), "budget");
         assertNull(event.getBudget()); assertTrue(controller.hasBudgetDraft(event.getId()));
@@ -39,7 +50,7 @@ class CommercialWorkflowTest {
     @Test void missingCateringServiceProducesExplicitlyUnverifiedBudgetWithoutInventedProviders() {
         var event = event(); var service = new EventService(); service.createEvent(event);
         AITool unavailable = query -> { throw new PlanningException("Not configured"); };
-        var facade = new EventPlanningFacade(service, new EventPlanningAgent(prompt -> budgetJson().toString()), unavailable, unavailable);
+        var facade = own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> budgetJson().toString()), unavailable, unavailable));
         var budget = facade.generateBudget(event.getId(), "community");
         assertTrue(budget.providers().isEmpty());
         assertTrue(budget.assumptions().stream().anyMatch(w -> w.contains("discovery unavailable")));
@@ -50,10 +61,10 @@ class CommercialWorkflowTest {
     @Test void retrievedAndManualVenuesAreStoredAndComparedByActualIds() {
         var event = event(); var service = new EventService(); service.createEvent(event);
         AtomicReference<String> querySeen = new AtomicReference<>();
-        var controller = new EventPlanningController(new EventPlanningFacade(service,
+        var controller = new EventPlanningController(own(new EventPlanningFacade(service,
                 new EventPlanningAgent(prompt -> comparisons(event.getVenueOptions()).toString()), query -> {
                     querySeen.set(query); return new ToolResult("Fake provider", List.of(unknownVenue("retrieved")), List.of());
-                }, query -> providers()));
+                }, query -> providers())));
         controller.researchVenues(event.getId(), "workshop halls");
         assertTrue(querySeen.get().contains(event.getLocation()));
         controller.addVenue(event.getId(), knownVenue("manual"));
@@ -68,8 +79,8 @@ class CommercialWorkflowTest {
         var event = event(); var service = new EventService(); service.createEvent(event);
         event.addVenueOptions(List.of(knownVenue("existing")));
         AtomicReference<String> output = new AtomicReference<>(budgetJson().toString());
-        var facade = new EventPlanningFacade(service, new EventPlanningAgent(prompt -> output.get()),
-                query -> { throw new PlanningException("External provider failed"); }, query -> providers());
+        var facade = own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> output.get()),
+                query -> { throw new PlanningException("External provider failed"); }, query -> providers()));
         Budget draft = facade.generateBudget(event.getId(), "budget");
         output.set("{}");
         assertThrows(PlanningException.class, () -> facade.generateBudget(event.getId(), "budget"));
@@ -82,12 +93,12 @@ class CommercialWorkflowTest {
         var event = event(); var service = new EventService(); service.createEvent(event);
         var output = budgetJson();
         ((ObjectNode) output.path("items").get(0)).put("priceStatus", "UNKNOWN").putNull("unitCost");
-        var facade = new EventPlanningFacade(service, new EventPlanningAgent(prompt -> output.toString()), query -> providers(), query -> providers());
+        var facade = own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> output.toString()), query -> providers(), query -> providers()));
         facade.generateBudget(event.getId(), "budget");
         assertThrows(IllegalArgumentException.class, () -> facade.approveBudget(event.getId()));
         assertNull(event.getBudget());
-        var isolated = new EventPlanningFacade(service, new EventPlanningAgent(prompt -> fail("Unexpected AI call")),
-                query -> fail("Unexpected tool call"), query -> fail("Unexpected tool call"));
+        var isolated = own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> fail("Unexpected AI call")),
+                query -> fail("Unexpected tool call"), query -> fail("Unexpected tool call")));
         assertThrows(IllegalArgumentException.class, () -> isolated.generateBudget("missing", "budget"));
         assertThrows(IllegalArgumentException.class, () -> isolated.researchVenues("missing", "query"));
         assertThrows(IllegalArgumentException.class, () -> isolated.compareVenues("missing"));

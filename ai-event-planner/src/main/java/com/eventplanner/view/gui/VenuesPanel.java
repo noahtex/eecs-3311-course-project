@@ -1,7 +1,6 @@
 package com.eventplanner.view.gui;
 import com.eventplanner.model.*;
 import javafx.scene.Node;
-import javafx.scene.control.TextField;
 import java.time.Instant;
 import java.util.*;
 final class VenuesPanel {

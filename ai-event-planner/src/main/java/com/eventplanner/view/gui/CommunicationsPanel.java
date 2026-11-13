@@ -2,7 +2,6 @@ package com.eventplanner.view.gui;
 
 import com.eventplanner.model.*;
 import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.util.StringConverter;
 import java.util.List;
 

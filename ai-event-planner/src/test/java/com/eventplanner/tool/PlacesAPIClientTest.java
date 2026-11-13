@@ -6,10 +6,23 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlacesAPIClientTest {
+    private final java.util.List<PlacesAPIClient> clients = new java.util.ArrayList<>();
+    private PlacesAPIClient client(java.util.function.Supplier<String> key, PlacesAPIClient.Transport transport) {
+        var client = new PlacesAPIClient(key, transport);
+        clients.add(client);
+        return client;
+    }
+    @AfterEach void closeClients() {
+        // The test owns each client, including the one shared by its temporary search tools.
+        // Injected fake transports remain borrowed; closing them is not the client's responsibility.
+        clients.forEach(PlacesAPIClient::close);
+    }
+
     @TempDir Path directory;
     @Test void loadsLocalConfigurationIndependentlyOfGeminiWithEnvironmentPrecedence() throws Exception {
         Path path = directory.resolve(".env");
@@ -19,7 +32,7 @@ class PlacesAPIClientTest {
         assertThrows(PlanningException.class, () -> PlacesConfiguration.loadApiKey(path, Map.of("GOOGLE_PLACES_API_KEY", " ")));
     }
     @Test void missingConfigurationFailsBeforeTransportWithManualEntryGuidance() {
-        var client = new PlacesAPIClient(() -> PlacesConfiguration.loadApiKey(directory.resolve("absent"), Map.of()), request -> {
+        var client = client(() -> PlacesConfiguration.loadApiKey(directory.resolve("absent"), Map.of()), request -> {
             fail("No external request should occur"); return null;
         });
         var failure = assertThrows(PlanningException.class, () -> client.searchPlaces("event venue"));
@@ -27,7 +40,7 @@ class PlacesAPIClientTest {
         assertTrue(failure.getMessage().contains("venues add"));
     }
     @Test void mapsActualProviderFieldsWithoutInferringPricesCapacityOrOtherAccessibility() {
-        var client = new PlacesAPIClient(() -> "fake-test-key", request -> {
+        var client = client(() -> "fake-test-key", request -> {
             assertEquals("https://places.googleapis.com/v1/places:searchText", request.uri().toString());
             assertEquals("POST", request.method());
             String mask=request.headers().firstValue("X-Goog-FieldMask").orElseThrow();
@@ -59,9 +72,9 @@ class PlacesAPIClientTest {
         assertEquals(1, new CateringSearchTool(client).execute("catering").options().size());
     }
     @Test void emptyProviderResultsStayEmptyAndMissingFieldsStayUnknown() {
-        var empty = new PlacesAPIClient(() -> "fake", request -> new PlacesAPIClient.Response(200, "{}"));
+        var empty = client(() -> "fake", request -> new PlacesAPIClient.Response(200, "{}"));
         assertTrue(empty.searchPlaces("nothing").options().isEmpty());
-        var missing = new PlacesAPIClient(() -> "fake", request -> new PlacesAPIClient.Response(200,
+        var missing = client(() -> "fake", request -> new PlacesAPIClient.Response(200,
                 "{\"places\":[{\"id\":\"p\",\"displayName\":{\"text\":\"N\"}}]}"));
         var venue=missing.searchPlaces("query").options().get(0);
         assertEquals(Evidence.Status.UNKNOWN, venue.wheelchairEntrance().status());
@@ -70,21 +83,21 @@ class PlacesAPIClientTest {
     }
     @Test void httpTransportAndMalformedResponseFailuresNeverEchoRawData() {
         for (int status : new int[]{400, 403, 429, 500}) {
-            var client = new PlacesAPIClient(() -> "fake", request -> new PlacesAPIClient.Response(status, "private-provider-response key=fake"));
+            var client = client(() -> "fake", request -> new PlacesAPIClient.Response(status, "private-provider-response key=fake"));
             var error = assertThrows(PlanningException.class, () -> client.searchPlaces("query"));
             assertTrue(error.getMessage().contains("HTTP " + status)); assertFalse(error.getMessage().contains("private-provider"));
             assertNull(error.getCause());
         }
-        var network = new PlacesAPIClient(() -> "fake", request -> { throw new IOException("private-header key=fake"); });
+        var network = client(() -> "fake", request -> { throw new IOException("private-header key=fake"); });
         var error = assertThrows(PlanningException.class, () -> network.searchPlaces("query"));
         assertFalse(error.getMessage().contains("private-header")); assertNull(error.getCause());
         for (String invalid : new String[]{"private-provider-response", "null", "{\"places\":42}", "{\"places\":[{}]}", "{} {}"}) {
-            var malformed = new PlacesAPIClient(() -> "fake", request -> new PlacesAPIClient.Response(200, invalid));
+            var malformed = client(() -> "fake", request -> new PlacesAPIClient.Response(200, invalid));
             assertThrows(PlanningException.class, () -> malformed.searchPlaces("query"));
         }
     }
     @Test void interruptionIsPreservedWithoutExposingDetails() {
-        var client = new PlacesAPIClient(() -> "fake", request -> { throw new InterruptedException("private"); });
+        var client = client(() -> "fake", request -> { throw new InterruptedException("private"); });
         try {
             assertThrows(PlanningException.class, () -> client.searchPlaces("query"));
             assertTrue(Thread.currentThread().isInterrupted());

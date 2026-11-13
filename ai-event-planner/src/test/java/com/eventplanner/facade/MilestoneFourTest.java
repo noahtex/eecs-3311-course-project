@@ -11,9 +11,20 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.io.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MilestoneFourTest {
+    private final java.util.List<EventPlanningFacade> facades = new java.util.ArrayList<>();
+    private EventPlanningFacade own(EventPlanningFacade facade) {
+        facades.add(facade);
+        return facade;
+    }
+    @AfterEach void closeFacades() {
+        // Each facade owns its agent, tools and repository, but not the shared EventService.
+        facades.forEach(EventPlanningFacade::close);
+    }
+
  static final String CHANGE="{\"changes\":{\"attendance\":\"150\"},\"ambiguities\":[]}";
  static final String SCENARIO="{\"affectedComponents\":[\"catering\"],\"implications\":[\"More resources needed\"],\"warnings\":[],\"recommendations\":[\"Review capacity\"]}";
  static final String COMM="{\"factOrder\":[\"name\",\"dateTime\",\"type\"],\"opening\":\"Hello friends!\",\"closing\":\"Join us!\"}";
@@ -30,7 +41,7 @@ class MilestoneFourTest {
  EventPlanningFacade facade(Event e,String... replies) {
   Queue<String> queue=new ArrayDeque<>(List.of(replies));
   var events=new EventService(); events.createEvent(e);
-  return new EventPlanningFacade(events,new EventPlanningAgent(prompt->{ if(queue.isEmpty()) throw new AssertionError("Unexpected AI call"); return queue.remove(); }),q->{throw new AssertionError("No external venue call");},q->{throw new AssertionError("No external catering call");});
+  return own(new EventPlanningFacade(events,new EventPlanningAgent(prompt->{ if(queue.isEmpty()) throw new AssertionError("Unexpected AI call"); return queue.remove(); }),q->{throw new AssertionError("No external venue call");},q->{throw new AssertionError("No external catering call");}));
  }
  @Test void simulationIsIndependentIncludingNestedMutableUsersAndPlans() {
   Event e=event(); var f=facade(e,CHANGE,SCENARIO); var result=f.simulateScenario("e","Attendance grows to 150");
@@ -116,7 +127,7 @@ class MilestoneFourTest {
  }
  @Test void aiFailureDoesNotStoreReportOrScenarioChanges() {
   Event e=event(); var events=new EventService(); events.createEvent(e);
-  var f=new EventPlanningFacade(events,new EventPlanningAgent(prompt->{throw new PlanningException("AI unavailable");}));
+  var f=own(new EventPlanningFacade(events,new EventPlanningAgent(prompt->{throw new PlanningException("AI unavailable");})));
   assertThrows(PlanningException.class,()->f.simulateScenario("e","Attendance 150")); assertEquals(80,e.getExpectedAttendance());
   f.recordPostEvent("e",new PostEventData(null,null,List.of(),List.of(),List.of(),List.of(),List.of()));
   assertThrows(PlanningException.class,()->f.analyzePostEvent("e")); assertTrue(e.getReports().isEmpty());
@@ -142,7 +153,9 @@ class MilestoneFourTest {
  @Test void cliTraversesControllerAndFacadeWithCancellationAndHelp() {
   Event e=event(); var f=facade(e); var out=new ByteArrayOutputStream();
   String input="help\nplan update e\nstructured\n\n\nIndoor hall\n\n\n150\n700\n\nplan changes e\nplan confirm e\nno\nfaq ask e\nRegistration link?\npostevent view e\nexit\n";
-  new EventPlanningCLI(new EventPlanningController(f),new Scanner(input),new PrintStream(out)).run();
+  try (var scanner=new Scanner(input);var output=new PrintStream(out)) {
+   new EventPlanningCLI(new EventPlanningController(f),scanner,output).run();
+  }
   String text=out.toString(); assertTrue(text.contains("scenario simulate")); assertTrue(text.contains("Changes cancelled")); assertTrue(text.contains("not confirmed")); assertEquals(80,e.getExpectedAttendance());
  }
 }

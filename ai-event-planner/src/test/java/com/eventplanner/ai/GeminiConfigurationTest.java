@@ -34,9 +34,10 @@ class GeminiConfigurationTest {
 
     @Test
     void adapterDelegatesToApiClientAdaptee() {
-        var adapter = new GeminiAdapter(new GeminiAPIClient() {
+        try (var adapter = new GeminiAdapter(new GeminiAPIClient() {
             @Override public String generateContent(String prompt) { return "translated: " + prompt; }
-        });
-        assertEquals("translated: request", adapter.generate("request"));
+        })) {
+            assertEquals("translated: request", adapter.generate("request"));
+        }
     }
 }

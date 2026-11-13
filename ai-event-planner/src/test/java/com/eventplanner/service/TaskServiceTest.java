@@ -1,7 +1,6 @@
 package com.eventplanner.service;
 
 import com.eventplanner.model.*;
-import com.eventplanner.support.ExecutionFixtures;
 import java.time.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;

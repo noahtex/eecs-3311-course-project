@@ -7,9 +7,20 @@ import com.eventplanner.service.EventService;
 import com.eventplanner.support.PlanningFixtures;
 import com.eventplanner.support.PlanningFixtures.FakeAIModel;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlanningWorkflowTest {
+    private final java.util.List<EventPlanningFacade> facades = new java.util.ArrayList<>();
+    private EventPlanningFacade own(EventPlanningFacade facade) {
+        facades.add(facade);
+        return facade;
+    }
+    @AfterEach void closeFacades() {
+        // Each facade owns its agent, tools and repository, but not the shared EventService.
+        facades.forEach(EventPlanningFacade::close);
+    }
+
     @Test
     void controllerFacadeStoreResultsInSameEventAndEnforceOwnership() {
         var event = PlanningFixtures.event();
@@ -17,7 +28,7 @@ class PlanningWorkflowTest {
         service.createEvent(event);
         var model = new FakeAIModel(prompt -> prompt.contains("F01:") ? PlanningFixtures.concepts(event).toString()
                 : PlanningFixtures.blueprints().toString());
-        var controller = new EventPlanningController(new EventPlanningFacade(service, new EventPlanningAgent(model)));
+        var controller = new EventPlanningController(own(new EventPlanningFacade(service, new EventPlanningAgent(model))));
         var idea = controller.addIdea(event.getId(), "Lee", "An accessible venue");
         assertTrue(controller.listIdeas(event.getId()).contains(idea));
         controller.addConstraint(event.getId(), "No alcohol");
@@ -50,15 +61,15 @@ class PlanningWorkflowTest {
         service.createEvent(event);
         var good = new EventPlanningAgent(prompt -> prompt.contains("F01:") ? PlanningFixtures.concepts(event).toString()
                 : PlanningFixtures.blueprints().toString());
-        var facade = new EventPlanningFacade(service, good);
+        var facade = own(new EventPlanningFacade(service, good));
         var concepts = facade.fuseIdeas(event.getId());
         var blueprints = facade.generateBlueprints(event.getId(), concepts.get(0).id(), "budget");
         var badConcepts = PlanningFixtures.concepts(event);
         ((com.fasterxml.jackson.databind.node.ObjectNode) badConcepts.path("concepts").get(1)).remove("summary");
         var badBlueprints = PlanningFixtures.blueprints();
         ((com.fasterxml.jackson.databind.node.ObjectNode) badBlueprints.path("blueprints").get(1)).remove("agenda");
-        var broken = new EventPlanningFacade(service, new EventPlanningAgent(prompt -> prompt.contains("F01:")
-                ? badConcepts.toString() : badBlueprints.toString()));
+        var broken = own(new EventPlanningFacade(service, new EventPlanningAgent(prompt -> prompt.contains("F01:")
+                ? badConcepts.toString() : badBlueprints.toString())));
         assertThrows(PlanningException.class, () -> broken.fuseIdeas(event.getId()));
         assertThrows(PlanningException.class, () -> broken.generateBlueprints(event.getId(), concepts.get(0).id(), "budget"));
         assertEquals(concepts, event.getConcepts());
