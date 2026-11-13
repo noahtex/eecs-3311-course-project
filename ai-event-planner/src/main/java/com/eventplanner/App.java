@@ -25,7 +25,7 @@ public class App extends Application {
  @Override public void start(Stage stage) {
   if(startupError!=null){var alert=new Alert(Alert.AlertType.ERROR,startupError);alert.setTitle("Planit — saved data unavailable");alert.setHeaderText("Planit could not open saved data");alert.getDialogPane().getStylesheets().add(App.class.getResource("dashboard.css").toExternalForm());alert.setResizable(true);alert.showAndWait();return;}
   if(facade==null)throw new IllegalStateException("Initialize Planit's storage before starting the GUI.");
-  dashboard=new Dashboard(new GuiSession(new EventPlanningController(facade)),facade::close);
+  dashboard=new Dashboard(new GuiSession(new EventPlanningController(facade)),facade::close,getHostServices()::showDocument);
   scene=new Scene(dashboard.root(),1280,850);
   scene.getStylesheets().add(App.class.getResource("dashboard.css").toExternalForm());
   var screen=Screen.getPrimary().getVisualBounds();

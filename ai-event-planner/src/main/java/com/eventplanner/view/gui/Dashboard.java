@@ -27,6 +27,7 @@ public final class Dashboard implements AutoCloseable {
  private final java.util.Map<String,Double> scrollPositions=new java.util.HashMap<>();
  private boolean refreshing,busy,closed;
  private final Runnable cleanup;
+ private final java.util.function.Consumer<String> browser;
  private final java.util.Map<String,PartBState> partB=new java.util.HashMap<>();
  PartBState partB(String id){return partB.computeIfAbsent(id,key->new PartBState());}
  private final java.util.Map<String,String> diagnostics=new java.util.HashMap<>();
@@ -38,8 +39,9 @@ public final class Dashboard implements AutoCloseable {
  }
  private record Completion(Object result,java.util.Map<String,String> diagnostics) { }
  public Dashboard(GuiSession session) { this(session,()->{}); }
- public Dashboard(GuiSession session,Runnable cleanup) {
-  this.cleanup=cleanup;
+ public Dashboard(GuiSession session,Runnable cleanup) { this(session,cleanup,url->{throw new IllegalStateException("Browser unavailable");}); }
+ public Dashboard(GuiSession session,Runnable cleanup,java.util.function.Consumer<String> browser) {
+  this.browser=java.util.Objects.requireNonNull(browser);this.cleanup=cleanup;
   this.session=session; controller=session.controller();
   var brand=new Label("Planit");brand.getStyleClass().add("brand");
   var icon=new ImageView(new Image(java.util.Objects.requireNonNull(Dashboard.class.getResource(
@@ -134,6 +136,10 @@ public final class Dashboard implements AutoCloseable {
  }
  private void lock(boolean value){if(root.getCenter()!=null)root.getCenter().setDisable(value);progress.setVisible(value);progress.setManaged(value);}
  private void failure(Throwable ex){if(!status.getStyleClass().contains("error"))status.getStyleClass().add("error");status.setText(ex instanceof IllegalArgumentException || ex instanceof PlanningException || ex instanceof com.eventplanner.storage.StorageException ? ex.getMessage():"Operation failed. Check your configuration and try again.");}
+ void openWebsite(String url){
+  if(!ProviderViews.safeWebsite(url)){failure(new IllegalArgumentException("Only valid HTTP or HTTPS websites can be opened."));return;}
+  try{browser.accept(url);}catch(RuntimeException ex){failure(new IllegalArgumentException("Unable to open the website. Copy its address and open it in your browser."));}
+ }
  public boolean busy(){return busy;}
  @Override public void close(){if(closed)return;closed=true;executor.submit(()->{try{cleanup.run();}catch(RuntimeException ignored){/* Never leak transport diagnostics or credentials. */}});executor.shutdown();}
 }

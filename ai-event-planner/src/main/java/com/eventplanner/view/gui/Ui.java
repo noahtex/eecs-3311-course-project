@@ -31,6 +31,15 @@ final class Ui {
  static void style(DialogPane pane){pane.getStylesheets().add(Ui.class.getResource("/com/eventplanner/dashboard.css").toExternalForm());}
  static TextArea details(String text) { var area=new TextArea(text); area.setEditable(false); area.setWrapText(true); area.setPrefRowCount(8); return area; }
  static <T> ComboBox<T> choice(List<T> items) { var box=new ComboBox<T>(FXCollections.observableArrayList(items)); if(!items.isEmpty())box.getSelectionModel().selectFirst(); return box; }
+ static ComboBox<String> planningPriority() {
+  var box=choice(List.of("budget","community","attendance"));
+  box.setConverter(new javafx.util.StringConverter<>() {
+   public String toString(String value){return switch(Objects.toString(value,"")){case "budget"->"Budget \u2014 Minimize costs";case "community"->"Community \u2014 Encourage engagement";case "attendance"->"Attendance \u2014 Maximize turnout";default->"";};}
+   public String fromString(String value){throw new UnsupportedOperationException("Select a planning priority.");}
+  });
+  box.setAccessibleText("Planning Priority");return box;
+ }
+ static Node planningPriorityField(ComboBox<String> box){return new VBox(7,field("Planning Priority",box),note("Choose what the AI should prioritize when generating recommendations."));}
  static boolean confirm(String title,String message) {
   var alert=new Alert(Alert.AlertType.CONFIRMATION,message,ButtonType.CANCEL,ButtonType.OK); alert.setTitle(title); alert.setHeaderText(title);style(alert.getDialogPane());
   return alert.showAndWait().orElse(ButtonType.CANCEL)==ButtonType.OK;

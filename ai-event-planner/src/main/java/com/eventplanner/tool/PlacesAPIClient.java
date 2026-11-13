@@ -55,7 +55,7 @@ public final class PlacesAPIClient implements AutoCloseable {
             HttpRequest request = HttpRequest.newBuilder(URI.create("https://places.googleapis.com/v1/places:searchText"))
                     .timeout(Duration.ofSeconds(30)).header("Content-Type", "application/json")
                     .header("X-Goog-Api-Key", key)
-                    .header("X-Goog-FieldMask", "places.id,places.displayName,places.formattedAddress,places.googleMapsUri,places.businessStatus,places.types,places.accessibilityOptions")
+                    .header("X-Goog-FieldMask", "places.id,places.displayName,places.formattedAddress,places.googleMapsUri,places.businessStatus,places.types,places.accessibilityOptions,places.nationalPhoneNumber,places.websiteUri")
                     .POST(HttpRequest.BodyPublishers.ofString(body)).build();
             Response response = transport.send(request);
             if (response.status() < 200 || response.status() >= 300)
@@ -93,7 +93,7 @@ public final class PlacesAPIClient implements AutoCloseable {
             String address = place.path("formattedAddress").isTextual() && !place.path("formattedAddress").asText().isBlank()
                     ? place.path("formattedAddress").asText() : "Address not supplied by provider";
             Map<String, String> attributes = new LinkedHashMap<>();
-            for (String field : List.of("googleMapsUri", "businessStatus")) {
+            for (String field : List.of("googleMapsUri", "businessStatus", "nationalPhoneNumber", "websiteUri")) {
                 if (place.path(field).isTextual()) attributes.put(field, place.path(field).textValue());
             }
             if (place.path("types").isArray()) attributes.put("types", place.path("types").toString());

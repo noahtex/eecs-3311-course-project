@@ -26,16 +26,22 @@ final class ResultViews {
  static Node availability(String heading,List<TimeSlot> slots){return Ui.bullets(heading,slots.isEmpty()?List.of("UNKNOWN — no availability recorded"):slots.stream().map(slot->DisplayNames.date(slot.start())+" → "+DisplayNames.date(slot.end())).toList());}
  static Node event(Event event){return stack(Ui.section(event.getName(),event.getType()+" · "+event.getLocation()),Ui.metrics(Ui.metric("Expected attendees",event.getExpectedAttendance()),Ui.metric("Spending limit",DisplayNames.money(event.getTotalBudget(),event.getPlanningCurrency()))),Ui.section("Event local time","Starts: "+DisplayNames.date(event.getDateTime())+"\nEnds: "+DisplayNames.date(event.getEndDateTime())),Ui.bullets("Goals & constraints",event.getConstraints()),Ui.technical("Event reference: "+event.getId()));}
  static Node budgetItem(BudgetItem item,String currency){return stack(Ui.badge(item.priceStatus().name()),Ui.section(item.description(),"Category: "+item.category()),Ui.metrics(Ui.metric("Quantity",item.quantity()),Ui.metric("Unit price",DisplayNames.money(item.unitCost(),currency)),Ui.metric("Line total",DisplayNames.money(item.total(),currency))),Ui.section("Source / quote / assumption",item.source()),Ui.technical(item.toString()));}
- static Node catering(Budget budget,DisplayNames names){
+ static Node catering(Budget budget,DisplayNames names,java.util.function.Consumer<String> browser){
   var box=new VBox(14);
-  for(var option:budget.catering())box.getChildren().add(stack(Ui.section(option.recommendation(),"Provider: "+(option.providerId()==null?"Unconfirmed provider":budget.providers().stream().filter(p->p.id().equals(option.providerId())).map(VenueOption::name).findFirst().orElse("Unknown provider"))),list("Dietary suitability",option.dietaryNotes(),names),Ui.technical(option.toString())));
+  for(var option:budget.catering()){
+   var provider=budget.providers().stream().filter(p->p.id().equals(option.providerId())).findFirst();
+   var recommendation=stack(Ui.badge("AI RECOMMENDATION · NOT A SUPPLIER QUOTE"),Ui.prose(option.recommendation()),
+    provider.isPresent()?ProviderViews.catering(provider.get(),browser):Ui.note("No catering provider verified"),
+    list("Dietary suitability — AI assumptions; confirm with provider",option.dietaryNotes(),names),Ui.technical(option.toString()));
+   box.getChildren().add(recommendation);
+  }
   if(budget.catering().isEmpty())box.getChildren().add(Ui.note("No catering recommendations recorded."));
   box.getChildren().add(list("Budget assumptions",budget.assumptions(),names));
-  for(var provider:budget.providers())box.getChildren().add(venue(provider));
+  box.getChildren().add(Ui.note("Estimated allocations are shown in the budget above. They are not provider quotes. Confirm menus, pricing, dietary suitability and allergen handling directly."));
+  for(var provider:budget.providers())if(budget.catering().stream().noneMatch(o->provider.id().equals(o.providerId())))
+   box.getChildren().add(Ui.card("Researched provider — not matched to a recommendation",ProviderViews.catering(provider,browser)));
   return box;
  }
- private static String fact(Evidence<?> evidence){return evidence.value()==null?"UNKNOWN":evidence.value()+" · "+evidence.status();}
- static Node venue(VenueOption venue){return stack(Ui.badge("CANDIDATE · NOT A BOOKING"),Ui.section(venue.name(),venue.address()),Ui.metrics(Ui.metric("Capacity",fact(venue.capacity())),Ui.metric("Rental cost",fact(venue.rentalCost())+" "+venue.currency()),Ui.metric("Availability","UNKNOWN")),Ui.section("Wheelchair entrance",fact(venue.wheelchairEntrance())+"\nThis is not a full accessibility assessment.\nSource: "+venue.wheelchairEntrance().source()),Ui.section("Equipment",fact(venue.equipment())+"\nSource: "+venue.equipment().source()),Ui.section("Evidence & provenance","Provider: "+venue.source()+"\nRetrieved: "+venue.retrievedAt()+"\nCapacity source: "+venue.capacity().source()+"\nRental cost source: "+venue.rentalCost().source()),Ui.technical(venue.toString()));}
  static Node comparison(VenueComparison value,DisplayNames names){return stack(Ui.section(names.venue(value.venueId()),"Known-fit score: "+value.knownFitScore()+" · AI interpretation, not a verified booking"),Ui.prose(names.readable(value.analysis())),list("Warnings",value.warnings(),names),list("Trade-offs",value.tradeOffs(),names),Ui.technical(value.toString()));}
  private record Difference(String field,String original,String simulated){}
  static Node fields(Map<String,String> values,DisplayNames names){

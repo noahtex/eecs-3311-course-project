@@ -30,11 +30,16 @@ class PlacesAPIClientTest {
         var client = new PlacesAPIClient(() -> "fake-test-key", request -> {
             assertEquals("https://places.googleapis.com/v1/places:searchText", request.uri().toString());
             assertEquals("POST", request.method());
-            assertTrue(request.headers().firstValue("X-Goog-FieldMask").orElseThrow().contains("places.id"));
+            String mask=request.headers().firstValue("X-Goog-FieldMask").orElseThrow();
+            assertTrue(mask.contains("places.id"));
+            assertTrue(mask.contains("places.nationalPhoneNumber"));
+            assertTrue(mask.contains("places.websiteUri"));
+            assertFalse(mask.contains("*"));
             return new PlacesAPIClient.Response(200, """
                 {"places":[{"id":"actual-provider-id","displayName":{"text":"Provider-returned name"},
                 "formattedAddress":"Provider-returned address","googleMapsUri":"https://maps.google.com/?cid=1",
                 "types":["event_venue"],"businessStatus":"OPERATIONAL",
+                "nationalPhoneNumber":"(416) 555-0100","websiteUri":"https://example.org/venue","email":"not-a-places-field@example.org",
                 "accessibilityOptions":{"wheelchairAccessibleEntrance":false,"wheelchairAccessibleParking":true}}]}
                 """);
         });
@@ -43,6 +48,9 @@ class PlacesAPIClientTest {
         assertEquals("google:actual-provider-id", venue.id());
         assertEquals("Provider-returned name", venue.name());
         assertEquals("Provider-returned address", venue.address());
+        assertEquals("(416) 555-0100",venue.providerAttributes().get("nationalPhoneNumber"));
+        assertEquals("https://example.org/venue",venue.providerAttributes().get("websiteUri"));
+        assertFalse(venue.providerAttributes().containsKey("email"));
         assertEquals(Evidence.Status.PROVIDER_REPORTED, venue.wheelchairEntrance().status());
         assertFalse(venue.wheelchairEntrance().value());
         assertNull(venue.capacity().value()); assertNull(venue.rentalCost().value()); assertNull(venue.equipment().value());
@@ -55,7 +63,10 @@ class PlacesAPIClientTest {
         assertTrue(empty.searchPlaces("nothing").options().isEmpty());
         var missing = new PlacesAPIClient(() -> "fake", request -> new PlacesAPIClient.Response(200,
                 "{\"places\":[{\"id\":\"p\",\"displayName\":{\"text\":\"N\"}}]}"));
-        assertEquals(Evidence.Status.UNKNOWN, missing.searchPlaces("query").options().get(0).wheelchairEntrance().status());
+        var venue=missing.searchPlaces("query").options().get(0);
+        assertEquals(Evidence.Status.UNKNOWN, venue.wheelchairEntrance().status());
+        assertFalse(venue.providerAttributes().containsKey("nationalPhoneNumber"));
+        assertFalse(venue.providerAttributes().containsKey("websiteUri"));
     }
     @Test void httpTransportAndMalformedResponseFailuresNeverEchoRawData() {
         for (int status : new int[]{400, 403, 429, 500}) {
