@@ -77,6 +77,8 @@
                         <goals><goal>exec</goal></goals>
                         <configuration>
                             <executable>${java.home}/bin/java</executable>
+                            <!-- Give the child JVM the Windows console directly, bypassing stdin pumping. -->
+                            <inheritIo>true</inheritIo>
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath/>
