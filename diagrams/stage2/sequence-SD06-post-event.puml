@@ -1,0 +1,43 @@
+@startuml
+!include style.puml
+title SD06 — F10 saved actuals before qualitative analysis
+boundary "PostEventPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant AdaptivePlanningService as S
+entity Event as E
+participant BudgetService as B
+participant EventPlanningAgent as A
+V -> C : recordPostEvent(eventId, data) [user confirms actuals]
+C -> F : recordPostEvent(eventId, data)
+F -> S : record(event, data)
+note over S : Validate outcome task IDs against approved tasks
+S -> E : storePostEventData(data)
+ref over F : SD07 save actuals separately
+V -> C : analyzePostEvent(eventId)
+C -> F : analyzePostEvent(eventId)
+F -> S : analyze(event)
+S -> E : getPostEventData()
+alt Actuals record absent
+  S --> F : IllegalArgumentException; record outcomes first
+else Actuals record exists (nullable fields allowed)
+  opt Approved budget matches current currency and has no unknown item costs
+    S -> B : totalExpenses(event.getBudget())
+    B --> S : approved planned expense total
+  end
+  note over S
+    Java calculates actual-minus-planned attendance/expense,
+    approved-task completion rate and missing-information flags.
+    Baseline is current approved plan, not frozen event close.
+  end note
+  S -> A : milestoneOutput(qualitative instruction, recorded outcomes/context)
+  ref over A : SD08 model generation; no invented outcome data
+  A --> S : summary / successes / issues / lessons / recommendations
+  note over S : Construct PostEventReport with computed values and outcome snapshot
+  S -> E : storeReport(report)
+  ref over F : SD07 save report before success
+  F --> C : PostEventReport
+  C --> V : report / explicit missing information
+end
+note over V,E : No historical currency identity; no claim that fictional demo outcomes actually occurred
+@enduml

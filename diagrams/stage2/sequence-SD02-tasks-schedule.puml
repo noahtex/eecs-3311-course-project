@@ -1,0 +1,69 @@
+@startuml
+!include style.puml
+title SD02 — F03/F04 draft generation and separate approval
+boundary "TasksPanel / SchedulePanel\nor EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant EventPlanningAgent as A
+entity Event as E
+participant "taskService: TaskService" as T
+participant "scheduleService: ScheduleService" as S
+participant "repository: PlanRepository" as R
+V -> C : generateTasks(eventId)
+C -> F : generateTasks(eventId)
+F -> F : otherTasks(event)
+F -> A : proposeTaskAssignments(event, otherWorkload)
+A -> E : executionBlueprints()
+alt Alternatives exist, none approved
+  E --> A : IllegalArgumentException
+  A --> V : approval-required error (through facade/controller)
+else Approved blueprint OR no-alternatives fallback
+  E --> A : singleton approved blueprint OR empty list
+  ref over A : SD08 generation; only approved execution context / labelled fallback
+  A --> F : proposed tasks
+  F -> T : validateAssignments(event, proposed, otherWorkload)
+  T --> F : issues
+  note over F : Clear unsuitable generated assignees; retain safe draft and warnings
+  F -> R : save(captured PlanData including task draft)
+  F --> V : draft / warnings (through controller)
+  V -> C : approveTasks(eventId) [explicit user action]
+  C -> F : approveTasks(eventId)
+  F -> T : saveAssignments(event, draft, otherTasks(event))
+  T -> T : validateAssignments(event, draft, otherEvents)
+  alt Blocking assignment problems
+    T --> F : IllegalArgumentException; draft retained
+  else Acceptable (unassigned may remain with warnings)
+    T -> E : storeTasks(approved)
+    note over F : Remove task draft and proposal warnings
+    F -> R : save(captured PlanData)
+  end
+end
+== F04 uses the same execution-blueprint gate ==
+V -> C : buildSchedule(eventId)
+C -> F : buildSchedule(eventId)
+F -> A : proposeSchedule(event)
+A -> E : executionBlueprints()
+ref over A : Same gate; SD08 AI generation only if allowed
+A --> F : Schedule
+note over F : Retain scheduleDrafts entry; do not replace approved schedule
+F -> R : save(captured PlanData including schedule draft)
+V -> C : scheduleConflicts(eventId)
+C -> F : scheduleConflicts(eventId)
+F -> S : detectConflicts(event, viewSchedule(eventId))
+S --> V : diagnostics (through facade/controller)
+V -> C : approveSchedule(eventId) [after review/revision]
+C -> F : approveSchedule(eventId)
+F -> S : saveSchedule(event, draft)
+S -> S : detectConflicts(event, approved)
+alt Conflicts
+  S --> F : IllegalArgumentException; draft retained
+else No conflicts
+  S -> E : storeSchedule(approved)
+  note over F : Remove schedule draft
+  F -> R : save(captured PlanData)
+end
+note over V,R
+  Revisions create/update drafts; discard removes draft, preserving approved state.
+  Every successful meaningful mutation uses SD07; errors are not success responses.
+end note
+@enduml

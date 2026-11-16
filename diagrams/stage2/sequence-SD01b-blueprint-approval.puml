@@ -1,0 +1,46 @@
+@startuml
+!include style.puml
+title SD01b — pending blueprint selection versus approved execution
+actor Organizer as U
+boundary "BlueprintsPanel\nor EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+entity Event as E
+participant "repository: PlanRepository" as R
+U -> V : Select reviewed alternative
+V -> C : selectBlueprint(eventId, blueprintId)
+C -> F : selectBlueprint(eventId, blueprintId)
+F -> E : selectBlueprint(blueprintId)
+E -> E : requireBlueprint(blueprintId)
+note right of E
+  Only selectedBlueprintId changes.
+  Prior approvedBlueprintId remains authoritative.
+end note
+F -> R : save(captured PlanData) [state changed]
+U -> V : Approve selected blueprint
+V -> C : viewBlueprint(eventId, selectedBlueprintId)
+C -> F : viewBlueprint(eventId, selectedBlueprintId)
+F --> V : selected blueprint (through controller)
+alt Organizer cancels
+  note over V,E : No approveBlueprint call; existing approval and saved pending selection remain
+else Organizer confirms reviewed alternative
+  V -> C : approveBlueprint(eventId)
+  C -> F : approveBlueprint(eventId)
+  F -> E : approveSelectedBlueprint()
+  E -> E : requireBlueprint(selectedBlueprintId)
+  opt Approved ID changes and approved tasks/schedule exist
+    E -> E : flagReview(component, issues)
+  end
+  opt Approved ID changes and retained facade drafts exist
+    F -> E : flagReview(component, issues)
+  end
+  F -> R : save(captured PlanData) [state changed]
+  F --> C : completion after save
+  C --> V : render execution approval / review warnings
+end
+note over F,E
+  Other alternatives, tasks, schedules and drafts are retained.
+  No automatic regeneration; no Observer notification for this switch.
+  save failure restores prior captured state (SD07).
+end note
+@enduml

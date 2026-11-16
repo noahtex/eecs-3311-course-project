@@ -1,0 +1,16 @@
+' Shared presentation only; not an independent diagram.
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam ArrowColor #334155
+skinparam classBackgroundColor #EFF6FF
+skinparam classBorderColor #334155
+skinparam noteBackgroundColor #FFFBEB
+skinparam noteBorderColor #B45309
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipantBackgroundColor #EFF6FF
+hide empty members

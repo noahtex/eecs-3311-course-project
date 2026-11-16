@@ -1,0 +1,56 @@
+@startuml
+!include style.puml
+title SD07 — production load, meaningful mutation and save-failure restoration
+participant "App.init / CLIApp.main" as Entry
+control EventPlanningFacade as F
+participant JsonPlanRepository as R
+participant PlanDataMapper as M
+participant EventService as S
+== Startup ==
+Entry -> F : persistent()
+F -> R : new JsonPlanRepository(AppDataDirectory.resolve())
+note over R : Acquire exclusive OS file lock; reject second owning session
+F -> R : load()
+note over R : Strict JSON/version checks; absent new blueprint refs default to null
+R -> M : restore(data) [semantic validation]
+M --> R : validated graph
+R --> F : Optional<PlanData>
+opt Saved data present
+  F -> F : restore(data)
+  F -> M : restore(data)
+  M --> F : restored events / stable identities
+  F -> S : restoreEvents(restored)
+  note over F : Restore draft maps and pending changes; subscribe fresh service observers
+end
+note over Entry,R : Invalid saved data aborts startup; no empty-store reset or automatic overwrite
+== Each controller-mediated mutation ==
+F -> F : mutate(operation): lock; capture() before
+F -> F : operation.get()
+alt Operation throws before post-operation capture
+  note over F : Exception propagates; finally unlocks. No general operation-failure rollback asserted.
+else Operation returns
+  F -> F : capture() after
+  alt before equals after
+    note over F,R : No save (e.g. simulation); return result
+  else State differs
+    F -> R : save(after)
+    note over R : Verify external-change digest; validate DTO graph
+    R -> M : restore(after) [semantic validation]
+    note over R : Serialize to same-directory temp file; flush
+    R -> R : replace(temporary, file)
+    alt Save / after-capture failure
+      R --> F : RuntimeException [save failure]
+      F -> F : restore(before)
+      note over F : Restore domain, drafts, pending proposals and observers; throw storage error
+    else Save succeeds
+      R --> F : completed; expectedDigest updated
+      note over F : Return operation result only after persistence
+    end
+  end
+end
+note over R
+  replace uses ATOMIC_MOVE when supported, normal replacement fallback.
+  No backup history, universal power-loss guarantee or network multi-user store.
+  close releases file lock; lock-file existence alone is not a live lock.
+end note
+@enduml

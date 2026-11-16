@@ -1,0 +1,69 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — Observer and adaptive planning
+class Event <<Subject>> {
+  -observers: Set<EventObserver>
+  +addObserver(observer: EventObserver)
+  +applyChanges(changes: Map<String,String>)
+  +flagReview(component: String, issues: List<String>)
+  +snapshot(): Event
+}
+interface EventObserver <<Observer>> {
+  +onEventChanged(event: Event, changedFields: Set<String>)
+}
+class TaskService <<Concrete Observer>> {
+  +validateAssignments(event: Event, plan: List<Task>, otherEvents: List<Task>)
+  +warnings(event: Event, plan: List<Task>, otherEvents: List<Task>)
+  +saveAssignments(event: Event, approved: List<Task>, otherEvents: List<Task>)
+}
+class ScheduleService <<Concrete Observer>> {
+  +detectConflicts(event: Event, schedule: Schedule): List<String>
+  +saveSchedule(event: Event, approved: Schedule)
+}
+class BudgetService <<Concrete Observer>> {
+  +validateBudget(event: Event, budget: Budget): List<String>
+  +totalExpenses(budget: Budget): BigDecimal
+  +saveBudget(event: Event, budget: Budget)
+}
+class EventPlanningFacade {
+  -subscribe(event: Event)
+  -observed(id: String): Event
+  +confirmChange(eventId: String, confirmed: boolean)
+}
+class AdaptivePlanningService {
+  -pending: Map<Event,PlanChange>
+  +interpret(e: Event, request: String): PlanChange
+  +propose(e: Event, request: String): PlanChange
+  +proposeFields(e: Event, changes: Map<String,String>): PlanChange
+  +confirm(e: Event, confirmed: boolean)
+  +simulate(e: Event, request: String): ScenarioResult
+  +contingency(e: Event, risk: String): ContingencyPlan
+  +communication(e: Event, channel: Channel, tone: String): Communication
+  +faq(e: Event, question: String): String
+  +record(e: Event, data: PostEventData)
+  +analyze(e: Event): PostEventReport
+}
+class EventPlanningAgent
+Event "0..*" --> "0..*" EventObserver : observers / notifies
+EventObserver <|.. TaskService
+EventObserver <|.. ScheduleService
+EventObserver <|.. BudgetService
+EventPlanningFacade ..> Event : registers services
+EventPlanningFacade *--> AdaptivePlanningService : adaptive
+AdaptivePlanningService --> EventPlanningAgent : agent
+AdaptivePlanningService ..> Event : snapshot / applyChanges
+TaskService ..> Event : flagReview("tasks", issues)
+ScheduleService ..> Event : flagReview("schedule", issues)
+BudgetService ..> Event : flagReview("budget", issues)
+note bottom of Event
+  applyChanges notifies observers inline; no notifyObservers()
+  or removeObserver() method exists. Formal F08 changes also
+  revert stored communications to drafts.
+  Direct configuration setters bypass notifications.
+end note
+note bottom of TaskService
+  Observer callback rechecks with empty other-event workload.
+  Explicit facade validation/approval supplies otherTasks(event).
+  Revalidation retains plans and sets advisory warnings.
+end note
+@enduml

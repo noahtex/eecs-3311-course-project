@@ -1,0 +1,44 @@
+@startuml
+!include style.puml
+title SD08 — Adapter calls and bounded structured-output retry
+participant "caller: EventPlanningFacade\nor AdaptivePlanningService" as F
+participant EventPlanningAgent as A
+participant "model: GeminiAdapter\nimplements AIModel" as Adapter
+participant GeminiAPIClient as Client
+participant "Google GenAI SDK / Gemini API" as API
+F -> A : feature method OR milestoneOutput(instruction, data)
+note over A : Build feature/context prompt; Strategy guidance where applicable
+loop At most 2 attempts; retry only malformed/invalid structured output
+  A -> Adapter : generate(prompt + feedback)
+  Adapter -> Client : generateContent(prompt)
+  Client -> API : SDK generation request (implementation detail)
+  alt Transport/configuration failure
+    break Propagate transport/configuration failure; exit generation
+      Client --> A : safe exception (through adapter)
+      A --> F : exception; no malformed-output retry
+    end
+  else Text response
+    API --> Client : generated content
+    Client --> Adapter : response text
+    Adapter --> A : response text
+    A -> A : parse JSON and invoke parser callback
+    alt Callback validation passes
+      break Return immediately; no more attempts
+        A --> F : validated result
+      end
+    else First invalid structured response
+      note over A : Build sanitized validation feedback; retry once
+    else Second invalid structured response
+      break Both attempts invalid
+        A --> F : PlanningException; no result returned for storage
+      end
+    end
+  end
+end
+note over F,A
+  F01–F06 validate feature schema within the bounded parser callback.
+  milestoneOutput validates a JSON object; F07–F10 feature-field checks
+  occur later in AdaptivePlanningService, outside this retry boundary.
+  No fabricated offline success; no live providers called for this UML task.
+end note
+@enduml

@@ -1,0 +1,9 @@
+' Use default Graphviz layout for actor placement; other diagrams use Smetana.
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam noteBackgroundColor #FFFBEB
+skinparam noteBorderColor #B45309
+skinparam packageStyle rectangle

@@ -1,0 +1,42 @@
+@startuml
+!include style.puml
+title SD03a — F05 provider context, draft budget and approval
+boundary "BudgetPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant "cateringTool: CateringSearchTool" as Tool
+participant PlacesAPIClient as P
+participant EventPlanningAgent as A
+participant BudgetService as B
+entity Event as E
+V -> C : generateBudget(eventId, priority)
+C -> F : generateBudget(eventId, priority)
+F -> A : setPlanningStrategy(PlanningStrategy.fromName(priority))
+F -> Tool : execute(catering query)
+Tool -> P : searchPlaces(query)
+alt Provider discovery succeeds
+  P --> F : ToolResult (via tool)
+else PlanningException from provider discovery
+  note over F : Build explicitly unavailable ToolResult with warnings; no fabricated providers
+end
+F -> A : planBudgetAndCatering(event, providers)
+ref over A : SD08 structured generation; generated prices cannot be CONFIRMED
+A --> F : proposed Budget
+note over F : Store budgetDrafts entry; save captured state through SD07
+F --> V : draft budget (through controller)
+V -> C : validateBudget(eventId)
+C -> F : validateBudget(eventId)
+F -> B : validateBudget(event, viewBudget(eventId))
+B --> V : issues (through facade/controller)
+V -> C : approveBudget(eventId) [after review/edit]
+C -> F : approveBudget(eventId)
+F -> B : saveBudget(event, draft)
+B -> B : remainingBudget(event, budget)
+alt Unknown cost or over-budget
+  B --> F : IllegalArgumentException; draft retained
+else Approval allowed (estimates may remain)
+  B -> E : storeBudget(budget)
+  note over F : Remove draft; SD07 saves approved budget before success
+end
+note over F,E : editBudget creates a revised draft; discardBudget preserves approved budget
+@enduml

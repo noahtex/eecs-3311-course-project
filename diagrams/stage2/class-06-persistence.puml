@@ -1,0 +1,85 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — persistent snapshots and repository boundary
+class EventPlanningFacade {
+  {static} +persistent(): EventPlanningFacade
+  -capture(): PlanData
+  -restore(data: PlanData)
+  -mutate(operation: Supplier<T>): T
+  +close()
+}
+interface PlanRepository {
+  +load(): Optional<PlanData>
+  +save(data: PlanData)
+  +description(): String
+  +close()
+}
+class JsonPlanRepository {
+  -file: Path
+  -expectedDigest: byte[]
+  -lock: FileLock
+  +load(): Optional<PlanData>
+  +save(data: PlanData)
+  #replace(temporary: Path, destination: Path)
+  +close()
+}
+class InMemoryPlanRepository
+class AppDataDirectory {
+  {static} +resolve(): Path
+}
+class StorageJson {
+  {static} ~mapper(): ObjectMapper
+}
+class PlanDataMapper {
+  {static} +captureEvents(events: List<Event>): List<EventData>
+  {static} +restore(data: PlanData): List<Event>
+}
+class PlanData <<record>> {
+  schemaVersion: int
+  events: List<EventData>
+  drafts: Map<String,DraftData>
+}
+class "PlanData.EventData" as EventData <<nested record>> {
+  selectedBlueprintId: String
+  approvedBlueprintId: String
+  approvedTasks: List<Task>
+  approvedSchedule: Schedule
+  approvedBudget: Budget
+}
+class "PlanData.DraftData" as DraftData <<nested record>> {
+  tasks: List<Task>
+  schedule: Schedule
+  budget: Budget
+  pendingChange: PlanChange
+}
+class "PlanData.TeamData" as TeamData <<nested record>>
+class "PlanData.MemberData" as MemberData <<nested record>>
+class Event
+EventPlanningFacade --> PlanRepository : repository
+PlanRepository <|.. JsonPlanRepository
+PlanRepository <|.. InMemoryPlanRepository
+EventPlanningFacade ..> AppDataDirectory : production path
+EventPlanningFacade ..> PlanDataMapper : capture / restore
+EventPlanningFacade ..> PlanData : before / after
+JsonPlanRepository ..> StorageJson : mapper()
+JsonPlanRepository ..> PlanDataMapper : semantic validation
+PlanRepository ..> PlanData : load / save snapshots
+PlanData --> "0..*" EventData : events
+PlanData --> "0..*" DraftData : drafts (event-ID key)
+EventData --> "1" TeamData : team
+TeamData --> "0..*" MemberData : members
+PlanDataMapper ..> Event : reconstructs graph / identities
+note bottom of JsonPlanRepository
+  Exclusive OS lock; digest guards external edits.
+  Flushed same-directory temp file; atomic replacement
+  when supported, ordinary replacement fallback.
+  Legacy absent blueprint refs default to null on load.
+  Invalid data blocks startup, not an empty-store reset.
+end note
+note bottom of EventPlanningFacade
+  save only when captured state changes.
+  Persistence/capture failure after operation restores before.
+  Operation exceptions are not a universal rollback guarantee.
+  restore reattaches fresh service observers.
+end note
+@enduml

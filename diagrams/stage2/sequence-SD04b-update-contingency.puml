@@ -1,0 +1,53 @@
+@startuml
+!include style.puml
+title SD04b — F08 proposal, confirmation, Observer and contingency
+boundary "PlanUpdatesPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant AdaptivePlanningService as S
+entity Event as E
+participant "taskService / scheduleService / budgetService\n(each implements EventObserver)" as O
+participant EventPlanningAgent as A
+V -> C : proposeChangeFields(eventId, fields)
+C -> F : proposeChangeFields(eventId, fields)
+F -> F : observed(eventId)
+F -> E : addObserver(service) [each service]
+F -> S : proposeFields(event, fields)
+S -> S : checked(event, fields)
+note over S : Validate isolated snapshot; store pending PlanChange with before fields
+ref over F : SD07 save pending proposal; real event facts unchanged
+note over V,S
+  CLI natural alternative: proposeChange -> adaptive.propose -> interpret.
+  GUI preview obtains fields from SD04a.
+end note
+V -> C : confirmChange(eventId, confirmed)
+C -> F : confirmChange(eventId, confirmed)
+F -> S : confirm(observed(eventId), confirmed)
+alt confirmed == false
+  note over S : Remove pending proposal; leave real event unchanged
+else confirmed == true and before fields stale
+  S --> F : IllegalArgumentException; propose again
+else confirmed == true and proposal current
+  S -> E : applyChanges(changes)
+  note over E : Validate candidate snapshot; assign facts; reset communication approvals
+  loop Each registered service
+    E -> O : onEventChanged(event, changedFields)
+    O -> E : flagReview(component, issues) [if retained plan exists]
+  end
+  note over S : Remove pending proposal
+end
+ref over F : SD07 save meaningful resulting state; save failure restores before
+V -> C : generateContingency(eventId, risk)
+C -> F : generateContingency(eventId, risk)
+F -> S : contingency(event, risk)
+S -> A : milestoneOutput(contingency instruction, context)
+A --> S : recommendation JSON
+S -> E : addContingency(plan)
+ref over F : SD07 persist recommendation
+F --> V : unverified contingency (through controller)
+note over V,E
+  No weather tool, forecast call, supplier check or automatic contingency application.
+  GUI cancel-dialog alone makes no call; proposal remains pending.
+  CLI negative confirmation calls false and removes pending proposal.
+end note
+@enduml

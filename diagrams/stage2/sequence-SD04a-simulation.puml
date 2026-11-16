@@ -1,0 +1,44 @@
+@startuml
+!include style.puml
+title SD04a — F07 isolated simulation; GUI preview reuses interpreted fields
+boundary "ScenarioPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant AdaptivePlanningService as S
+participant EventPlanningAgent as A
+entity "original: Event" as E
+entity "copy: Event" as Copy
+V -> C : simulateScenario(eventId, request)
+C -> F : simulateScenario(eventId, request)
+F -> S : simulate(event, request)
+S -> S : interpret(event, request)
+S -> A : milestoneOutput(interpret instruction, context)
+ref over A : SD08 JSON-object generation; adaptive service checks feature fields
+A --> S : changes / ambiguities
+note over S : Reject unsupported/ambiguous changes; checked() validates a snapshot
+S -> E : snapshot()
+E --> S : copy
+S -> Copy : applyChanges(change.changes())
+S -> A : milestoneOutput(analysis instruction, before/after context)
+A --> S : impacts / warnings / recommendations
+note over S,Copy
+  Java checks copied tasks/schedule/budget and calculates deltas.
+  Snapshot has no original observers/communications.
+  Expense delta is a rough attendance-proportional estimate.
+end note
+S --> F : ScenarioResult(change, copy, deltas, ...)
+note over F : mutate captures equal before/after; repository.save is not called
+F --> C : transient ScenarioResult
+C --> V : display simulation; original unchanged
+== Separate GUI real-change preview ==
+boundary PlanUpdatesPanel as PV
+participant PartBWorkflow as W
+PV -> W : previewChange(id, request)
+W -> C : simulateScenario(id, request)
+ref over C,F : Same simulation path above
+C --> W : ScenarioResult
+W -> C : proposeChangeFields(id, result.proposedChanges().changes())
+ref over C,S : SD04b stores pending proposal, not applied event facts
+W --> PV : analyzed ScenarioResult
+note over W,S : Exact analyzed fields are proposed; request is not interpreted twice
+@enduml

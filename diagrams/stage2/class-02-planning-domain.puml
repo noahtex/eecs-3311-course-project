@@ -1,0 +1,113 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — planning domain (selected fields and methods)
+class Event <<MVC Model / Observer Subject>> {
+  -id: String
+  -name: String
+  -type: String
+  -dateTime: LocalDateTime
+  -endDateTime: LocalDateTime
+  -expectedAttendance: int
+  -totalBudget: double
+  -selectedBlueprintId: String
+  -approvedBlueprintId: String
+  +selectBlueprint(blueprintId: String)
+  +approveSelectedBlueprint()
+  +executionBlueprints(): List<EventBlueprint>
+  +snapshot(): Event
+}
+class PlanningTeam {
+  +addMember(user: User)
+  +removeMember(user: User)
+  +addEvent(event: Event)
+  +removeEvent(event: Event)
+}
+class User {
+  +getId(): String
+  +getSkills(): List<String>
+  +getAvailability(): List<TimeSlot>
+  +getCapacityHours(): double
+}
+class EventIdea <<record>> {
+  id: String
+  organizer: String
+  text: String
+  submittedAt: LocalDateTime
+}
+class EventConcept <<record>> {
+  id: String
+  incorporatedIdeas: List<String>
+  conflicts: List<String>
+  compromises: List<String>
+}
+class EventBlueprint <<record>> {
+  id: String
+  conceptId: String
+  priority: String
+  agenda: List<String>
+  estimatedBudget: double
+  plannedAttendance: int
+  requiredCapacity: int
+}
+class Task <<record>> {
+  assignedUserId: String
+  workStart: LocalDateTime
+  deadline: LocalDateTime
+  effortHours: double
+  +assign(userId: String): Task
+  +revise(userId: String, start: LocalDateTime, due: LocalDateTime): Task
+  +withStatus(value: Status): Task
+}
+class Schedule <<record>> {
+  id: String
+  sessions: List<Session>
+}
+class Session <<record>> {
+  speakerId: String
+  slot: TimeSlot
+  space: String
+  resources: List<String>
+}
+class Speaker <<record>> {
+  id: String
+  name: String
+  availability: List<TimeSlot>
+}
+class TimeSlot <<record>> {
+  start: LocalDateTime
+  end: LocalDateTime
+  +overlaps(other: TimeSlot): boolean
+}
+Event "0..*" --> "1" PlanningTeam : planningTeam
+PlanningTeam "0..*" o--> "0..*" User : members (shared)
+PlanningTeam --> "0..*" Event : events (separate list)
+Event --> "0..*" EventIdea : ideas
+Event --> "0..*" EventConcept : concepts
+Event --> "0..*" EventBlueprint : blueprints
+Event --> "0..*" Task : approved tasks
+Event --> "0..1" Schedule : approved schedule
+Event --> "0..*" Speaker : speakers
+Event --> "0..*" TimeSlot : resourceAvailability values
+Schedule --> "0..*" Session : sessions
+Session --> "1" TimeSlot : slot
+Speaker --> "0..*" TimeSlot : availability
+User --> "0..*" TimeSlot : availability
+Task ..> User : assignedUserId (nullable ID)
+Session ..> Speaker : speakerId (nullable ID)
+EventBlueprint ..> EventConcept : conceptId
+EventConcept ..> EventIdea : incorporatedIdeas IDs
+note bottom of Event
+  Pending selection differs from execution approval.
+  Existing alternatives without approval block F03/F04 generation.
+  No alternatives: labelled event-details-only fallback.
+  Approved tasks/schedule are retained on blueprint switch;
+  review flags do not automatically reconcile content.
+end note
+legend bottom
+  Record compartments list selected components (accessors implicit).
+  Nullable references: 0..1; collections may be empty.
+  Immutable records can be shared by snapshots: no exclusive composition asserted.
+  ID dependencies are not direct Java object references.
+  Hollow diamond: shared aggregation; team membership may initially be empty.
+endlegend
+@enduml

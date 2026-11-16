@@ -1,0 +1,58 @@
+@startuml
+!include style-usecase.iuml
+left to right direction
+title Planit Stage 2 — implemented use cases through GUI or CLI
+actor "Local organizer / planner" as Planner
+rectangle "Planit — JavaFX dashboard OR CLI (shared controller/facade)" {
+  usecase "Manage event, constraints,\nteam and availability" as Setup
+  usecase "F01: Add ideas and fuse\ninto concepts" as F01
+  usecase "F02: Generate, inspect, select\nand approve blueprint" as F02
+  usecase "F03: Generate/revise tasks,\ncheck deadlines, approve/discard" as F03
+  usecase "F04: Build/revise agenda,\ncheck conflicts, approve/discard" as F04
+  usecase "F05: Budget/catering proposal,\nedit allocations, validate/approve" as F05
+  usecase "F06: Research/manual venues\nand compare evidence" as F06
+  usecase "F07: Simulate what-if\nwithout changing real plan" as F07
+  usecase "F08: Propose/confirm/discard\nreal changes; generate contingency" as F08
+  usecase "F09a: Generate/edit/approve\ncommunication drafts" as F09a
+  usecase "F09b: Ask saved-fact FAQ\nor receive unknown response" as F09b
+  usecase "F10: Record actual outcomes\nand generate analysis" as F10
+  usecase "Reopen saved plans /\nsequential GUI–CLI handoff" as Load
+}
+Planner -- Setup
+Planner -- F01
+Planner -- F02
+Planner -- F03
+Planner -- F04
+Planner -- F05
+Planner -- F06
+Planner -- F07
+Planner -- F08
+Planner -- F09a
+Planner -- F09b
+Planner -- F10
+Planner -- Load
+note right of F06
+  Supporting services across these use cases:
+  Gemini: F01–F10 generation/analysis except local FAQ.
+  Places: F05 provider discovery, F06 research.
+  Edits, approvals, actuals recording and FAQ are local.
+  Provider participation is not every action in a label.
+  See class-04 and SD03/SD08 for API relationships.
+end note
+note bottom of Planner
+  No login, roles or separate attendee portal.
+  Organizer can enter member ideas and ask attendee questions.
+  Both interfaces expose F01–F10; no concurrent shared-store sessions.
+end note
+note bottom of Load
+  Successful meaningful mutations autosave.
+  Read-only FAQ and simulations do not save new facts.
+  F03/F04 require approval if blueprint alternatives exist.
+  No weather, booking or send/publish integration.
+end note
+legend bottom
+  Solid actor associations denote participation, not call order.
+  No <<include>>/<<extend>> asserted for optional provider use or workflow order.
+  External service participation is summarized in the note to avoid crossing actor lines.
+endlegend
+@enduml

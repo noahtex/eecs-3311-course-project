@@ -1,0 +1,102 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — commercial evidence and adaptive outcomes
+class Event <<MVC Model>>
+class Budget <<record>> {
+  id: String
+  currency: String
+  priority: String
+  items: List<BudgetItem>
+}
+class BudgetItem <<record>> {
+  quantity: BigDecimal
+  unitCost: BigDecimal
+  priceStatus: PriceStatus
+  +total(): BigDecimal
+}
+class CateringOption <<record>> {
+  providerId: String
+}
+class VenueOption <<record>> {
+  id: String
+  source: String
+  retrievedAt: Instant
+  providerAttributes: Map<String,String>
+  capacity: Evidence<Integer>
+  rentalCost: Evidence<BigDecimal>
+}
+class "Evidence<T>" as Evidence <<record>> {
+  value: T
+  status: Status
+  source: String
+}
+class VenueComparison <<record>>
+class ToolResult <<record>>
+class PlanChange <<record>> {
+  before: Map<String,String>
+  changes: Map<String,String>
+}
+class ScenarioResult <<record>> {
+  budgetLimitDifference: BigDecimal
+  estimatedExpenseDifference: BigDecimal
+}
+class ContingencyPlan <<record>> {
+  risk: String
+  impact: String
+  proposedResponse: String
+}
+class Communication <<record>> {
+  id: String
+  channel: Channel
+  text: String
+  approved: boolean
+  sourceFacts: Map<String,String>
+  +edit(value: String): Communication
+  +approve(): Communication
+}
+class PostEventData <<record>> {
+  actualAttendance: Integer
+  actualExpenses: BigDecimal
+  completedTaskIds: List<String>
+  unfinishedTaskIds: List<String>
+}
+class PostEventReport <<record>> {
+  attendanceDifference: Integer
+  expenseDifference: BigDecimal
+  completionRate: Double
+  expectedAttendance: int
+  plannedBudget: BigDecimal
+}
+Event --> "0..1" Budget : approved budget
+Budget --> "1..*" BudgetItem : items
+Budget --> "0..*" CateringOption : catering
+Budget --> "0..*" VenueOption : providers
+Event --> "0..*" VenueOption : venueOptions
+Event --> "0..*" VenueComparison : venueComparisons
+VenueOption --> "4" Evidence : capacity / rentalCost /\nwheelchairEntrance / equipment
+CateringOption ..> VenueOption : nullable providerId
+VenueComparison ..> VenueOption : venueId
+ToolResult --> "0..*" VenueOption : options
+ScenarioResult --> "1" PlanChange : proposedChanges
+ScenarioResult --> "1" Event : snapshot (isolated copy)
+Event --> "0..*" ContingencyPlan : contingencies
+Event --> "0..*" Communication : communications
+Event --> "0..1" PostEventData : postEventData
+Event --> "0..*" PostEventReport : reports
+PostEventReport --> "1" PostEventData : outcomes snapshot
+note bottom of ScenarioResult
+  Transient simulation; not retained in Event or PlanData.
+  Pending real PlanChange lives in AdaptivePlanningService
+  and is saved separately in PlanData.DraftData.
+end note
+note bottom of PostEventReport
+  Actuals/reports lack historical currency identity.
+  Analysis uses current approved plan; plannedBudget means
+  approved expense total, not event spending limit.
+end note
+legend bottom
+  Records shown with selected components only; no fictitious mutators.
+  Shared immutable snapshots use associations, not exclusive composition.
+  Null amount means unknown, not zero. No venue booking/selection state exists.
+endlegend
+@enduml

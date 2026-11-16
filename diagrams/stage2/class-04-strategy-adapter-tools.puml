@@ -1,0 +1,74 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — Strategy, Adapter and external tools
+interface PlanningStrategy <<Strategy>> {
+  +name(): String
+  +buildGuidance(event: Event): String
+  {static} +fromName(priority: String): PlanningStrategy
+}
+class BudgetPriorityStrategy
+class CommunityPriorityStrategy
+class AttendancePriorityStrategy
+class EventPlanningAgent <<Strategy Context / Adapter Client>> {
+  +setPlanningStrategy(strategy: PlanningStrategy)
+  +synthesizeIdeas(event: Event): List<EventConcept>
+  +generateBlueprints(event: Event, concept: EventConcept): List<EventBlueprint>
+  +proposeTaskAssignments(event: Event, otherWorkload: List<Task>): List<Task>
+  +proposeSchedule(event: Event): Schedule
+  +planBudgetAndCatering(event: Event, providers: ToolResult): Budget
+  +compareVenues(event: Event): List<VenueComparison>
+  +milestoneOutput(instruction: String, data: String): JsonNode
+}
+interface AIModel <<Adapter Target>> {
+  +generate(prompt: String): String
+  +close()
+}
+class GeminiAdapter <<Adapter>> {
+  +generate(prompt: String): String
+  +close()
+}
+class GeminiAPIClient <<Adaptee>> {
+  +generateContent(prompt: String): String
+  +close()
+}
+class EventPlanningFacade <<Facade>>
+interface AITool {
+  +execute(query: String): ToolResult
+  +close()
+}
+class VenueSearchTool
+class CateringSearchTool
+class PlacesAPIClient {
+  +searchPlaces(query: String): ToolResult
+  +close()
+}
+class VenueService {
+  +evaluate(event: Event, venue: VenueOption): VenueComparison
+  +rank(comparisons: List<VenueComparison>): List<VenueComparison>
+}
+PlanningStrategy <|.. BudgetPriorityStrategy
+PlanningStrategy <|.. CommunityPriorityStrategy
+PlanningStrategy <|.. AttendancePriorityStrategy
+EventPlanningAgent --> PlanningStrategy : strategy
+EventPlanningAgent --> AIModel : model
+AIModel <|.. GeminiAdapter
+GeminiAdapter --> GeminiAPIClient : client
+EventPlanningFacade --> EventPlanningAgent : agent
+EventPlanningFacade --> AITool : venueTool / cateringTool
+AITool <|.. VenueSearchTool
+AITool <|.. CateringSearchTool
+VenueSearchTool --> PlacesAPIClient : client
+CateringSearchTool --> PlacesAPIClient : client
+EventPlanningAgent ..> VenueService : constructs local scorer
+note bottom of EventPlanningAgent
+  Strategy supplies prompt guidance, not a guaranteed optimizer.
+  Facade invokes tools; agent receives provider context.
+  F07–F10 orchestration lives in AdaptivePlanningService.
+  No tools list, autonomous tool dispatch or agent memory map.
+end note
+legend bottom
+  Dashed line and hollow triangle: interface realization.
+  Solid arrow: retained association; dashed arrow: temporary dependency.
+  SDK / HTTP internals and AutoCloseable realizations omitted.
+endlegend
+@enduml

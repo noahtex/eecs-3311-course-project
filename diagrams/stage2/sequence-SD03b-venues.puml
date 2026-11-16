@@ -1,0 +1,40 @@
+@startuml
+!include style.puml
+title SD03b — F06 research is separate from comparison
+boundary "VenuesPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant VenueSearchTool as T
+participant PlacesAPIClient as P
+entity Event as E
+participant EventPlanningAgent as A
+participant VenueService as S
+V -> C : researchVenues(eventId, query)
+C -> F : researchVenues(eventId, query)
+F -> T : execute(query + event location)
+T -> P : searchPlaces(query)
+P --> T : ToolResult / safe provider error
+T --> F : ToolResult [success]
+F -> E : addVenueOptions(result.options())
+ref over F : SD07 persist candidates/evidence before returning success
+F --> V : provider results (through controller)
+note over V,E
+  Provider failure is an error, not a successful empty/fabricated search.
+  Alternative: addVenue(eventId, manually attributed VenueOption).
+  Listings are not selected or booked venues.
+end note
+V -> C : compareVenues(eventId)
+C -> F : compareVenues(eventId)
+F -> A : compareVenues(event)
+loop Each candidate
+  A -> S : evaluate(event, venue)
+  S --> A : deterministic fit / warnings
+end
+ref over A : SD08 AI narrative against scored candidates; Gemini still required
+A -> S : rank(comparisons)
+S --> A : ranked comparisons
+A --> F : List<VenueComparison>
+F -> E : storeVenueComparisons(comparisons)
+ref over F : SD07 save captured state
+F --> V : comparison evidence / uncertainties (through controller)
+@enduml

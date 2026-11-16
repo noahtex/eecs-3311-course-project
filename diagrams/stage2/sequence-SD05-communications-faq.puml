@@ -1,0 +1,52 @@
+@startuml
+!include style.puml
+title SD05 — F09 grounded drafts, explicit approval and local FAQ
+boundary "CommunicationsPanel / EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant AdaptivePlanningService as S
+participant EventPlanningAgent as A
+entity Event as E
+V -> C : generateCommunication(eventId, channel, tone)
+C -> F : generateCommunication(eventId, channel, tone)
+F -> S : communication(event, channel, tone)
+S -> S : approvedFacts(event)
+S -> A : milestoneOutput(instruction, facts/channel/tone)
+A --> S : factOrder / opening / closing
+S -> S : safeGreeting(opening), safeGreeting(closing)
+note over S : Check fact keys; Java renders only stored name/type/start facts
+S -> E : storeCommunication(unapproved draft)
+ref over F : SD07 save draft before success
+F --> V : editable draft (through controller)
+opt Save user edits
+  V -> C : editCommunication(eventId, id, body)
+  C -> F : editCommunication(eventId, id, body)
+  F -> S : editCommunication(event, id, body)
+  note over S : Communication.edit(body) returns approved=false
+  S -> E : storeCommunication(edited draft)
+  ref over F : SD07 save edited draft
+end
+V -> C : approveCommunication(eventId, id) [review confirmed in view]
+C -> F : approveCommunication(eventId, id)
+F -> S : approveCommunication(event, id)
+S -> S : approvedFacts(event)
+alt Draft sourceFacts differ from current facts
+  S --> F : reject stale draft
+else Facts match
+  note over S : Communication.approve() returns approved=true
+  S -> E : storeCommunication(approved draft)
+  ref over F : SD07 save approval; no send/post integration
+end
+== Read-only FAQ ==
+V -> C : askFaq(eventId, question)
+C -> F : askFaq(eventId, question)
+F -> S : faq(event, question)
+alt Exact supported name / type / start-time intent
+  S --> F : stored fact
+else Other wording or unconfirmed detail
+  S --> F : unknown; ask organizer
+end
+F --> C : answer
+C --> V : answer
+note over S,A : FAQ calls neither Gemini nor repository.save
+@enduml

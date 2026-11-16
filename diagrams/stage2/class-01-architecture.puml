@@ -1,0 +1,82 @@
+@startuml
+!include style.puml
+title Planit Stage 2 — MVC and Facade (selected operations)
+top to bottom direction
+class "javafx.application.Application" as Application <<external>>
+class App <<JavaFX entry>> {
+  +init()
+  +start(stage: Stage)
+  +stop()
+}
+class CLIApp <<CLI entry>> {
+  {static} +main(args: String[])
+}
+class Dashboard <<MVC View>>
+class GuiSession <<view state>>
+class EventPlanningCLI <<MVC View>> {
+  +run()
+}
+class EventPlanningController <<MVC Controller>> {
+  +fuseIdeas(eventId: String)
+  +generateBlueprints(eventId: String, conceptId: String, priority: String)
+  +selectBlueprint(eventId: String, blueprintId: String)
+  +approveBlueprint(eventId: String)
+  +generateTasks(eventId: String)
+  +confirmChange(eventId: String, confirmed: boolean)
+}
+class EventPlanningFacade <<Facade>> {
+  {static} +persistent(): EventPlanningFacade
+  +generateTasks(eventId: String): List<Task>
+  +approveTasks(eventId: String)
+  +buildSchedule(eventId: String): Schedule
+  +generateBudget(eventId: String, priority: String): Budget
+  +researchVenues(eventId: String, query: String): ToolResult
+  +simulateScenario(eventId: String, request: String): ScenarioResult
+  -mutate(operation: Supplier<T>): T
+}
+class EventService {
+  +requireEvent(eventId: String): Event
+  +storeConcepts(eventId: String, concepts: List<EventConcept>)
+  +storeBlueprints(eventId: String, blueprints: List<EventBlueprint>)
+}
+class EventPlanningAgent
+class AdaptivePlanningService
+class TaskService
+class ScheduleService
+class BudgetService
+interface PlanRepository
+class Event <<MVC Model>>
+Application <|-- App
+App ..> EventPlanningFacade : persistent()
+App ..> Dashboard : constructs
+CLIApp ..> EventPlanningFacade : persistent()
+CLIApp ..> EventPlanningCLI : constructs
+Dashboard --> GuiSession : session
+GuiSession --> EventPlanningController : controller
+Dashboard --> EventPlanningController : controller
+EventPlanningCLI --> EventPlanningController : controller
+EventPlanningController --> EventPlanningFacade : facade
+EventPlanningFacade --> EventService : eventService
+EventPlanningFacade --> EventPlanningAgent : agent
+EventPlanningFacade *--> AdaptivePlanningService : creates and retains
+EventPlanningFacade --> TaskService : taskService
+EventPlanningFacade --> ScheduleService : scheduleService
+EventPlanningFacade --> BudgetService : budgetService
+EventPlanningFacade --> PlanRepository : repository
+EventService "1" --> "0..*" Event : events
+AdaptivePlanningService --> EventPlanningAgent : agent
+note bottom of Dashboard
+  Feature views: IdeasPanel, BlueprintsPanel,
+  TasksPanel, SchedulePanel, BudgetPanel, VenuesPanel,
+  ScenarioPanel, PlanUpdatesPanel,
+  CommunicationsPanel, PostEventPanel; EventsPanel.
+  Panels receive Dashboard and delegate to its controller.
+  GUI: mvn javafx:run; CLI: mvn compile exec:exec@cli.
+end note
+legend bottom
+  Solid arrow: association; dashed arrow: dependency; filled diamond: composition.
+  Solid line with hollow triangle: class inheritance (App extends Application).
+  Facade creates its adaptive service; injected services use plain associations.
+  Generic operation bodies, constructors and most forwarding methods omitted.
+endlegend
+@enduml

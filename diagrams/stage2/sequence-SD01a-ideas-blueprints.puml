@@ -1,0 +1,49 @@
+@startuml
+!include style.puml
+title SD01a — F01 fusion and F02 blueprint generation
+actor Organizer as U
+boundary "IdeasPanel / BlueprintsPanel\nor EventPlanningCLI" as V
+control EventPlanningController as C
+control EventPlanningFacade as F
+participant EventService as S
+participant EventPlanningAgent as A
+participant "strategy: PlanningStrategy" as P
+participant "repository: PlanRepository" as R
+U -> V : Add attributed ideas, then fuse
+V -> C : addIdea(eventId, organizer, idea)
+C -> F : addIdea(eventId, organizer, idea)
+F -> S : addIdea(eventId, organizer, idea)
+ref over F,R : SD07 mutation capture/save; applied to each meaningful mutation
+V -> C : fuseIdeas(eventId)
+C -> F : fuseIdeas(eventId)
+F -> S : requireEvent(eventId)
+S --> F : Event
+F -> A : synthesizeIdeas(event)
+ref over A : SD08 AIModel.generate, parse/schema checks, bounded retry
+A --> F : List<EventConcept>
+F -> S : storeConcepts(eventId, concepts)
+F -> R : save(captured PlanData) [state changed]
+F --> C : concepts
+C --> V : concepts
+U -> V : Choose concept and planning priority
+V -> C : generateBlueprints(eventId, conceptId, priority)
+C -> F : generateBlueprints(eventId, conceptId, priority)
+F -> S : requireEvent(eventId)
+F -> S : getConcept(eventId, conceptId)
+F -> F : PlanningStrategy.fromName(priority)
+F -> A : setPlanningStrategy(strategy)
+F -> A : generateBlueprints(event, concept)
+A -> P : name()
+A -> P : buildGuidance(event)
+ref over A : SD08 generation; structured/numeric checks before return
+A --> F : List<EventBlueprint>
+F -> S : storeBlueprints(eventId, blueprints)
+F -> R : save(captured PlanData) [state changed]
+F --> C : alternatives
+C --> V : alternatives for inspection
+note over F,A
+  F02 does not execute a Places search.
+  Validation failure returns an error; no generated results are stored.
+  Selection and approval are separate operations: SD01b.
+end note
+@enduml
