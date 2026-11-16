@@ -1,255 +1,182 @@
-# AI Event Planning Agent
+# Planit — AI Event Planning Agent
 
-An AI-powered event planning system designed to help university clubs and small teams organize events more efficiently.
+**EECS 3311: Software Design · York University · Fall 2026 · Stage 2**
 
-This project is being developed for **EECS 3311: Software Design** at York University.
+Planit is an implemented Java/JavaFX event-planning application for university clubs and small teams. Its graphical dashboard and command-line interface share the same controller, services and persistent local JSON store. Gemini generates planning proposals; Java services check represented constraints, calculate totals and manage approvals. Organizers review proposals and confirm real changes.
 
-**Milestone 3B (F05/F06) implemented:** Budget/catering proposals, deterministic
-budget calculations and approval, real Google Places venue/provider discovery,
-manual venue entry and comparison are available through the CLI. See the
-[F05/F06 command, configuration and design guide](F05_F06_GUIDE.md).
+[GitHub repository](https://github.com/noahtex/eecs-3311-course-project) · [Demonstration guide](DEMONSTRATION_GUIDE.md) · [Stage 2 UML](diagrams/stage2/README.md)
 
-**F03/F04 implemented:** Smart task assignments and deadline tracking, plus agenda
-scheduling and deterministic conflict detection, are available through the CLI.
-See the [F03/F04 command and design guide](F03_F04_GUIDE.md) for every new command,
-interactive inputs, approval/revision workflows, tests and Stage 1 mappings.
+## Features
 
-## About the Project
+All ten features are available through both GUI and CLI.
 
-Planning events can be difficult for university clubs, especially when executive members are balancing school, work, and other responsibilities. Event planning also involves many connected decisions, such as budgeting, scheduling, venue selection, task assignments, catering, and managing unexpected changes.
+| ID | Feature | Implemented behavior |
+| --- | --- | --- |
+| F01 | Collaborative idea fusion | Combine attributed organizer ideas into concepts with source references, conflicts, compromises and uncertainties. |
+| F02 | Blueprints and feasibility | Generate alternatives using budget, community or attendance priorities; inspect warnings, select an alternative and explicitly approve it for execution. |
+| F03 | Task assignment and deadlines | Propose assignments using member profiles; check skills, availability, workload and deadlines; revise, approve or discard drafts. |
+| F04 | Agenda and conflict detection | Generate sessions and check event bounds, timing, speakers and resources; revise sessions before approving the schedule. |
+| F05 | Budget and catering | Propose categorized allocations and catering with provider context; edit allocations, calculate totals and approve reviewed estimates. Unknown costs and over-limit budgets block approval. |
+| F06 | Venue research and comparison | Discover Google Places candidates or add manual candidates; preserve evidence and unknowns, score fit and generate comparison explanations. |
+| F07 | What-if simulation | Analyze hypothetical changes on an isolated snapshot without changing the saved event; show impacts and qualified estimates. |
+| F08 | Adaptive updates and contingencies | Preview real changes, confirm or discard proposals, flag retained plans for review and generate contingency recommendations. |
+| F09 | Communications and FAQ | Generate, edit and approve email/Instagram/WhatsApp drafts; answer a narrow set of name/type/start-time questions from saved facts. |
+| F10 | Post-event analysis | Record actuals, task outcomes and feedback; calculate variances against the current approved plan and generate qualitative lessons and recommendations. |
 
-The goal of this project is to create an **AI Event Planning Agent** that works alongside an event planning team. Rather than replacing human decision-making, the agent helps organize information, generate recommendations, identify conflicts, and adapt plans when event details change.
+## Technology and design
 
-## Main Features
+The [Maven configuration](ai-event-planner/pom.xml) targets **Java 21** and pins **JavaFX 21.0.9**, **Google GenAI Java SDK 1.80.0**, **Jackson databind 2.18.11** and **JUnit Jupiter 5.11.4**. Google Places API (New) supplies venue and catering-provider discovery. Jackson handles structured AI responses and local JSON persistence.
 
-The proposed system includes:
+| Pattern | Participating implementation |
+| --- | --- |
+| MVC | `Dashboard`/feature panels and `EventPlanningCLI` → `EventPlanningController` → domain models/services. |
+| Facade | `EventPlanningFacade` coordinates planning, validation, approvals, tools and persistence. |
+| Strategy | `PlanningStrategy` with `BudgetPriorityStrategy`, `CommunityPriorityStrategy` and `AttendancePriorityStrategy` supplies interchangeable prompt guidance. |
+| Observer | `Event.applyChanges` notifies `TaskService`, `ScheduleService` and `BudgetService` through `EventObserver` during formal real-change confirmation. |
+| Adapter | `GeminiAdapter` implements `AIModel` and delegates to `GeminiAPIClient`, keeping the agent independent of SDK calls. |
 
-- Collaborative idea fusion
-- Event blueprint and feasibility generation
-- Smart task assignment and deadline tracking
-- Agenda scheduling and conflict detection
-- Budget and catering planning
-- Venue research and comparison
-- What-if scenario simulation
-- Adaptive plan updates and contingency planning
-- Event communications and attendee FAQ generation
-- Post-event analysis
+See the [Stage 2 class, use-case and sequence diagrams](diagrams/stage2/README.md) and [UML verification](UML_VERIFICATION.md) for relationships and scope.
 
-## AI Integration
+## Windows setup
 
-The system is designed to use **Google Gemini** as its primary large language model.
+### 1. Install prerequisites
 
-The AI agent will be responsible for tasks such as combining ideas from multiple organizers, generating event plans, reasoning about event constraints, comparing alternatives, and generating contingency plans.
+Install a **JDK 21 or newer**, **Apache Maven** and **Git**, then open PowerShell. Set `JAVA_HOME` to the JDK installation and ensure Java, Maven and Git are on `PATH`. Verify that Maven uses the intended JDK:
 
-Traditional software components will still handle deterministic operations such as budget calculations, schedule conflict detection, validation, and updating stored event information.
+```powershell
+java -version
+mvn -version
+git --version
+```
 
-## Design
+A desktop session is required for JavaFX. Internet access is needed for initial dependency downloads and live provider requests.
 
-The project uses object-oriented design and UML to plan the system before implementation.
+### 2. Open the project
 
-The current design includes:
+For a fresh checkout:
 
-- Class Diagram
-- Use-Case Diagram
-- Sequence Diagrams
-- Feature-to-Design Traceability
-- Detailed Feature Specifications
-- Design Pattern Documentation
+```powershell
+git clone https://github.com/noahtex/eecs-3311-course-project.git
+cd eecs-3311-course-project
+cd ai-event-planner
+```
 
-The system is designed around five main design patterns:
-
-1. **MVC (Model-View-Controller)**
-2. **Facade**
-3. **Strategy**
-4. **Observer**
-5. **Adapter**
-
-## User Interfaces
-
-The completed system is planned to support both:
-
-- **GUI** – A graphical event planning dashboard
-- **CLI** – A command-line interface providing access to the same core functionality
-
-Both interfaces will communicate with the same application controller and underlying system logic.
-
-## Project Status
-
-### Stage 2 command-line workflow
-
-Requires JDK 21 or newer and Maven. From the repository root:
+If you already have the repository, open PowerShell at its root and run only:
 
 ```powershell
 cd ai-event-planner
+```
+
+All Maven commands below run from **`ai-event-planner`**, where `pom.xml` is located.
+
+### 3. Configure providers locally
+
+Copy the tracked example without overwriting an existing configuration:
+
+```powershell
+if (-not (Test-Path -LiteralPath .env)) { Copy-Item -LiteralPath .env.example -Destination .env }
+git check-ignore .env
+```
+
+Privately edit **`ai-event-planner/.env`** using the names in [`.env.example`](ai-event-planner/.env.example):
+
+| Variable | Purpose |
+| --- | --- |
+| `GEMINI_API_KEY` | Your Gemini API credential; required for AI generation. |
+| `GEMINI_MODEL` | Model available to your account. The template and code default to `gemini-flash-latest`; availability must be confirmed for your account. |
+| `GOOGLE_PLACES_API_KEY` | Separate Google Maps Platform credential for live venue/provider discovery. Enable Places API (New) and applicable billing. |
+
+Replace the template's blank/placeholder credentials locally. Never commit, print or share real keys. You may instead configure these variables in the launch process's environment. Environment values take precedence over `.env`, including blank values; restart the application after changes. The loaders read `.env` from the current working directory.
+
+Ordinary local event operations and offline tests need no provider credentials. Full AI workflows require Gemini; live discovery requires Places. Venue candidates can also be entered manually. Provider requests send relevant planning/search data externally and may consume quota or incur charges.
+
+### 4. Test and launch
+
+Run the offline suite:
+
+```powershell
 mvn test
+```
+
+Launch the GUI:
+
+```powershell
+mvn javafx:run
+```
+
+Close the GUI and wait for its process to exit before launching the CLI against the same store:
+
+```powershell
 mvn compile exec:exec@cli
 ```
 
-The CLI uses the separate `com.eventplanner.CLIApp` entry point. The existing
-JavaFX entry point remains available with `mvn javafx:run`.
-Use `exec:exec@cli` to launch a separate JVM with explicit application cleanup;
-[CLI lifecycle notes](CLI_LIFECYCLE.md) explain the Okio daemon warning that can
-still appear with the legacy in-process `exec:java` launcher.
+The GUI starts `com.eventplanner.App`; the separate CLI JVM starts `com.eventplanner.CLIApp`. Use `help` at the `planner>` prompt and `exit` to close the CLI. See [CLI lifecycle notes](CLI_LIFECYCLE.md) for the preferred launcher and legacy `exec:java` caveats.
 
-Commands: `help`, `event create`, `event list`, `event view <id>`,
-`event delete <id>`, and `exit`. Creation prompts for name, type, location,
-date/time (for example `2026-12-01T18:30`), expected attendance, and total budget.
-Attendance must be a non-negative integer; budget must be finite and non-negative.
-Invalid field values are explained and prompted again. IDs are generated at creation;
-copy the ID from the creation response or event list for viewing and deletion.
-Deletion requires typing `yes`; other responses cancel it. End-of-input exits
-cleanly and cancels any unfinished operation.
+## Saved data
 
-Planit now saves GUI and CLI data automatically to a shared **local JSON store**.
-On Windows the default is `%LOCALAPPDATA%\Planit\planit.json`. Only one GUI or CLI
-session may open the store at a time. See the [persistence guide](PERSISTENCE_GUIDE.md)
-for directory overrides, saved draft/approval states, failure handling and recovery.
+Successful meaningful changes save automatically to **`%LOCALAPPDATA%\Planit\planit.json`** on Windows, with a fallback under `user.home\AppData\Local\Planit`. Saved events, generated alternatives, drafts, approvals, pending changes and reports survive restarts. Simulations, FAQ displays and unsaved form text are transient.
 
-MVC flow: `EventPlanningCLI` (view) → `EventPlanningController` →
-`EventPlanningFacade` → `EventService` → `Event` (model).
-The controller delegates application operations, while the facade validates event
-details and provides a simple interface over the existing service. `CLIApp` wires
-one shared `EventService` instance for the entire session.
+**Do not run the GUI and CLI simultaneously against the same data directory.** An exclusive OS lock rejects a second owning session. Close one interface before opening the other; do not delete `planit.lock` to bypass locking.
 
-### Milestone 2: F01 idea fusion and F02 blueprints
-
-The CLI now uses real Gemini calls for idea fusion and blueprint generation through
-the official `com.google.genai:google-genai:1.80.0` SDK. Jackson `2.18.11` parses
-structured JSON into immutable domain objects. JavaFX `App.java` and its launcher
-remain unchanged; `module-info.java` adds only the SDK and Jackson requirements.
-SDK setup follows the [official Google Gen AI Java SDK documentation](https://github.com/googleapis/java-genai).
-
-**Safe local configuration** (run from `ai-event-planner`):
+To use a separate store, set this before either launcher in PowerShell:
 
 ```powershell
-# Only when you do not already have .env:
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+$env:PLANIT_DATA_DIR = Join-Path $env:LOCALAPPDATA 'PlanitDemo'
 ```
 
-Edit `.env` locally to set `GEMINI_API_KEY` and `GEMINI_MODEL`. The example contains
-no credential. `.env` is ignored by `ai-event-planner/.gitignore`; verify with
-`git check-ignore .env` from the project folder. Never commit or print your key.
-Alternatively, set these environment variables in your local terminal or IDE.
-Environment values take precedence over `.env`, including blank values. The loader
-reads `.env` from the current working directory, supports quoted `KEY=value` lines
-and optional `export`, and does no interpolation or shell execution. Use full-line
-comments rather than inline comments. The model defaults to `gemini-flash-latest`;
-choose an available model for your account, or a specific model ID for repeatability.
-No key is required for ordinary event commands. Credentials are loaded only on an
-AI request. Errors omit SDK response bodies and credentials.
+Override precedence is the **application JVM's** `planit.dataDir` system property, then `PLANIT_DATA_DIR`, then the platform default. `PLANIT_DATA_DIR` is an environment override, not a `.env` setting. A Maven `-Dplanit.dataDir=...` option is not reliably forwarded to every child JVM; use the environment override with the documented launch commands. Keep custom data directories outside the repository. Storage is local plaintext JSON with no automatic backup history. See the [persistence guide](PERSISTENCE_GUIDE.md) for validation, conflicting writers and recovery.
 
-Launch and test:
+## CLI quick workflow
 
-```powershell
-cd ai-event-planner  # from the repository root
-mvn test
-mvn compile exec:exec@cli
-```
-
-In the CLI, use this sequence (replace the angle-bracket placeholders with IDs
-printed by the preceding commands):
+Enter these commands at `planner>`. Replace angle-bracket placeholders with IDs actually printed by Planit; supply requested text and configuration at the subsequent prompts.
 
 ```text
+help
 event create
-ideas add <eventId>
-ideas add <eventId>
-ideas list <eventId>
+event list
 constraints add <eventId>
-constraints list <eventId>
+ideas add <eventId>
+ideas add <eventId>
 ideas fuse <eventId>
 concepts list <eventId>
 blueprint generate <eventId> <conceptId>
 blueprint list <eventId>
 blueprint view <eventId> <blueprintId>
-exit
+blueprint select <eventId> <blueprintId>
+blueprint approve <eventId>
 ```
 
-`event create` prompts for the existing event fields. `ideas add` prompts for
-organizer name and idea. `constraints add` accepts an additional goal or constraint,
-such as "step-free access, two volunteers, no alcohol"; repeat to add more.
-`ideas fuse` displays at least two concepts, source idea IDs, themes, conflicts,
-compromises, and uncertainties. `blueprint generate` asks for `budget`, `community`,
-or `attendance`, then stores at least two alternatives. Blueprints include agenda,
-venue requirements, catering assumptions, resources, checklist, assumptions, and
-feasibility warnings. AI requests send the event details, constraints, organizer names,
-ideas, and selected concept to Gemini and consume your API quota.
+Use positive attendance for AI planning. Blueprint generation prompts for `budget`, `community` or `attendance`; approval displays the selected alternative and requires `yes`. Selection alone keeps the prior execution approval active. F03/F04 generation uses only the approved blueprint when alternatives exist; events without blueprints retain a labelled event-details-only fallback. Changing approval retains existing tasks/schedules and flags them for review.
 
-**Validation and uncertainty:** Planning requires a name, type, location, date/time,
-positive expected attendance, and a finite non-negative budget. Event creation still
-allows zero attendance for compatibility, but planning asks for a positive target.
-Missing ideas or invalid IDs fail before calling Gemini. Numeric budgets, proposed
-attendance, and capacity are checked in Java. Over-budget proposals, attendance
-mismatches, and capacity shortfalls are retained with explicit conflict warnings and
-suggested corrective action. Free-text constraints require manual review; the app
-does not claim to verify arbitrary natural-language rules. Unspecified goals,
-resources, accessibility and staffing remain unknown.
+Continue with `team set <eventId>` and `tasks generate <eventId>`, or configure availability using `schedule window <eventId>`, `speaker set <eventId>` and `resource set <eventId>` before `schedule build <eventId>`. Tasks, schedules and budgets have separate approval/discard commands. Use `help` and the detailed guides for complete inputs; generated IDs and provider results should be reviewed interactively.
 
-Generated narratives and costs are **unverified planning proposals**, not venue
-availability, actual capacity, vendor prices, or weather facts. The prompt prohibits
-claiming those facts, and every result includes an application-added unverified
-warning that the model cannot omit. No external venue/catering/weather tools are
-implemented. Review proposals manually before acting on them.
+## Verification
 
-The parser requires non-blank fields, correctly typed lists and numeric values,
-valid source idea IDs, coverage of submitted ideas across concepts, and at least
-two alternatives with distinct titles. Invalid structured output is retried **once**
-with stricter instructions; persistent failure saves no partial results. API errors
-return a safe diagnostic to the command loop. Concept and blueprint IDs are generated
-by Java. Successful generations append to the same `Event` object, so prior results
-remain available within the session; they are snapshots of inputs at generation time.
-After changing ideas or constraints, generate new proposals and select the new IDs.
-All events, ideas, constraints, concepts, and blueprints disappear on exit.
+Latest verified ordinary offline run, **November 16, 2026 (America/Toronto)**: `mvn test -B -ntp` completed with **BUILD SUCCESS — 173 reported, 158 passed, 15 skipped, 0 failures, 0 errors**.
 
-**Tests and optional real API check:** `mvn test` uses injected fake `AIModel`
-implementations and makes no Gemini requests. The real-API smoke test is skipped
-unless explicitly enabled. With local configuration present, run just that test:
+The skips were 14 opt-in JavaFX desktop tests and one opt-in live Gemini test. Injected model/provider responses were used; **no live Gemini or Places tests were run in that execution**. This was an incremental test run, not a clean package or verification of every GUI interaction. See [final report evidence](FINAL_REPORT_EVIDENCE.md) and the [integration audit](PLANIT_FINAL_INTEGRATION_AUDIT.md) for scope and historical desktop results.
 
-```powershell
-mvn test "-Dtest=GeminiSmokeTest" "-Dgemini.smoke=true"
-```
+## Demonstrations
 
-This sends synthetic organizer ideas to the real API, performs F01 and F02, validates
-the parsed objects and their storage, and may consume two to four requests (one retry
-per operation). A missing credential causes an explicit failure when enabled.
+- [GUI demonstration](https://youtu.be/nZuiaAbg7p8)
+- [CLI demonstration](https://youtu.be/z9DXe4JFFQE)
 
-| Requirement/pattern | Implementation |
-| --- | --- |
-| F01 Collaborative Idea Fusion | `EventIdea`, `EventConcept`, `EventPlanningAgent.synthesizeIdeas` |
-| F02 Blueprint & Feasibility | `EventBlueprint`, `EventPlanningAgent.generateBlueprints`, deterministic numeric checks |
-| Adapter target | `AIModel.generate` is the agent-facing abstraction |
-| Adapter | `GeminiAdapter` implements `AIModel` and delegates to `GeminiAPIClient` |
-| Adaptee | `GeminiAPIClient` wraps the official SDK and local configuration |
-| Strategy context | `EventPlanningAgent.setPlanningStrategy` applies the selected guidance |
-| Concrete strategies | `BudgetPriorityStrategy` (spending/reserve), `CommunityPriorityStrategy` (inclusion/relationships), `AttendancePriorityStrategy` (reach/capacity) |
-| MVC and Facade | CLI → Controller → Facade → Agent/Services; `EventService` stores results in `Event` |
+The [demonstration guide](DEMONSTRATION_GUIDE.md) documents commands and workflows; the [evidence index](FINAL_REPORT_EVIDENCE.md) provides fields for feature timestamps.
 
-**Stage 1 scope adjustments:** Concepts and blueprints are immutable records with
-typed lists rather than mutable UML placeholders; F07 revision is deferred. The
-existing `Event.addIdea(String)` and `getIdeas()` remain compatible while attributed
-`EventIdea` objects add source tracing. `AIModel` implements only the generation
-operation used for planning and structured venue analysis; separate summarization
-operations remain deferred. `constraints add/list` and `concepts list` are small
-CLI additions for supplying Stage 1 inputs and retrieving proposal IDs. F03/F04
-extend these workflows as documented in [the milestone guide](F03_F04_GUIDE.md).
-F05/F06 add the budget and Places-tool workflows described in
-[the Milestone 3B guide](F05_F06_GUIDE.md). F07–F10 workflows and new GUI screens remain deferred.
+## Important limitations
 
-The Stage 1 design context follows.
+- AI proposals, feasibility claims, prices, provider contacts and listings require organizer verification. Venue discovery does not book a venue; contingencies do not fetch weather or apply themselves automatically.
+- FAQ answers cover narrow name/type/start-time intents. Communications are drafts for review, with no direct sending or platform publishing.
+- Event times have no stored timezone/DST policy. Currency changes do not convert amounts; historical actuals/reports lack currency identity. Keep currency consistent for comparisons.
+- Granular editing is incomplete, including blueprint content, source idea/constraint edits, task/session add/remove, budget allocation add/remove and venue candidate edits.
+- Direct configuration changes can bypass Observer notifications. Explicitly validate retained plans after such changes; blueprint approval switches require manual reconciliation, and historical review warnings can remain after reapproval.
 
-**Stage 1 design completed; Stage 2 CLI and F01–F06 implemented.**
+## Documentation and submission
 
-Stage 1 focuses on defining the system requirements, features, architecture, UML diagrams, design patterns, and AI-agent interactions before implementation begins.
+- **Final report: TODO — add `stage2-report.pdf` and link it here.** This file is not present in the repository.
+- [Feature mappings, test/commit evidence and submission checklist](FINAL_REPORT_EVIDENCE.md) · [Integration audit](PLANIT_FINAL_INTEGRATION_AUDIT.md)
+- [Stage 2 UML index: editable sources, SVG and PNG](diagrams/stage2/README.md) · [UML verification](UML_VERIFICATION.md) · [Stage 1 specification/design](STAGE1_REPORT.md)
+- Detailed workflows: [F02 blueprint approval](F02_BLUEPRINT_SELECTION_GUIDE.md), [F03–F04 tasks/scheduling](F03_F04_GUIDE.md), [F05–F06 budget/venues](F05_F06_GUIDE.md), [F07–F10 advanced planning](MILESTONE4_GUIDE.md)
+- GUI details: [planning panels](MILESTONE5_PART_A_GUIDE.md), [advanced workflows](MILESTONE5_PART_B_GUIDE.md) · [Persistence](PERSISTENCE_GUIDE.md)
 
-## Course Information
-
-**Course:** EECS 3311 – Software Design  
-**Term:** Fall 2026  
-**Project:** Course Project – AI Agent-Based Software
-
-
-Milestone 4 (F07-F10) commands, architecture, approval boundaries and limitations: [MILESTONE4_GUIDE.md](MILESTONE4_GUIDE.md).
-
-
-JavaFX dashboard (Milestone 5, Part A): [launch, feature workflows and verification](MILESTONE5_PART_A_GUIDE.md).
-
-F02 execution blueprint: [selection, approval, CLI commands and legacy-save compatibility](F02_BLUEPRINT_SELECTION_GUIDE.md).
+Earlier guides retain historical milestone/test notes; use the dated evidence and current source when assessing the final implementation.
