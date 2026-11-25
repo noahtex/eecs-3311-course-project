@@ -1,0 +1,3 @@
+﻿# Replace the event ID with one from `event list` after adding organizer ideas.
+action=fuse-ideas
+eventId=REPLACE_WITH_SAVED_EVENT_ID

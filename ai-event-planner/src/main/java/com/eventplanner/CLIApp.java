@@ -13,8 +13,8 @@ public final class CLIApp {
     private CLIApp() { }
 
     public static void main(String[] args) {
-        try{run(EventPlanningFacade.persistent(), System.in, System.out);}
-        catch(com.eventplanner.storage.StorageException ex){System.err.println("Planit storage error: "+ex.getMessage());}
+        int status = StandaloneCLI.execute(args, System.in, System.out, System.err);
+        if (status != 0) System.exit(status);
     }
 
     /** Close the owned scanner without closing Maven/IDE-owned console streams or terminals. */

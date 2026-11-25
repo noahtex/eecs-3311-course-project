@@ -37,6 +37,37 @@ The [Maven configuration](ai-event-planner/pom.xml) targets **Java 21** and pins
 
 See the [Stage 2 class, use-case and sequence diagrams](diagrams/stage2/README.md) and [UML verification](UML_VERIFICATION.md) for relationships and scope.
 
+## Standalone terminal JAR
+
+Build once from the `ai-event-planner` directory with JDK 21 or newer and Maven:
+
+```powershell
+mvn clean package
+```
+
+The executable is `ai-event-planner/target/ai-event-planner-1.0-SNAPSHOT-cli.jar` relative to the repository root. Copy this JAR to another machine with Java 21 or newer; Maven is not needed to run it. The normal GUI (`mvn javafx:run`) and Maven CLI (`mvn exec:exec@cli`) remain available. The packaged JAR starts the CLI, not the GUI.
+
+From any directory, quote paths that contain spaces:
+
+```powershell
+java -jar "C:\path with spaces\ai-event-planner-1.0-SNAPSHOT-cli.jar" --help
+java -jar "C:\path with spaces\ai-event-planner-1.0-SNAPSHOT-cli.jar"
+java -jar "C:\path with spaces\ai-event-planner-1.0-SNAPSHOT-cli.jar" --llm gemini --input "C:\path with spaces\task.txt"
+```
+
+Without arguments, the interactive CLI starts; type `help` or `exit`. `--help` prints usage. File mode requires both `--llm gemini` and `--input PATH`, in either order. Gemini is the only supported LLM selection. Configure `GEMINI_API_KEY` and optionally `GEMINI_MODEL` in the process environment or in a `.env` file in the **current working directory**, not necessarily beside the JAR or task file. Environment variables override `.env`; the default model is `gemini-flash-latest`. Do not put credentials in arguments or task files. AI requests require network access, an authorized Gemini model and sufficient quota; event data is sent to Gemini.
+
+The UTF-8 plain-text task format contains one `key=value` per line; blank lines and lines beginning with `#` are ignored. The included [task.txt](ai-event-planner/task.txt) is a template:
+
+```text
+action=fuse-ideas
+eventId=REPLACE_WITH_SAVED_EVENT_ID
+```
+
+First use the interactive CLI to create an event (`event create`), add organizer ideas (`ideas add <eventId>`), and find its ID with `event list`. Replace the placeholder with that ID. Running the task invokes Planit's existing collaborative idea fusion. On success it prints `Saved 2 generated concepts for event ...` (the count can vary), followed by titles, summaries, themes, source idea IDs, conflicts, compromises and uncertainties. Generated proposals are unverified and require organizer review; file mode does not approve a blueprint. This mode currently supports only fusion for an existing event, not free-form instructions or creation of events.
+
+File mode opens the same local JSON store as the GUI and interactive CLI, takes its exclusive session lock, and persists successful fusion results to that event. Close other Planit sessions before running it. On Windows the default is `%LOCALAPPDATA%\Planit`; on macOS it is `~/Library/Application Support/Planit`; on Linux it is `$XDG_DATA_HOME/planit` or `~/.local/share/planit`. Set `PLANIT_DATA_DIR` to select a separate store, or pass `-Dplanit.dataDir=...` before `-jar`. Saved concepts can be inspected through `concepts list <eventId>`; existing events remain available. Exit codes are `0` success, `2` invalid arguments or task contents, `3` unreadable or missing input file, `4` missing Gemini key, and `5` configuration, storage or workflow failure. Authentication rejection, quota and network failures are operation failures (5).
+
 ## Windows setup
 
 ### 1. Install prerequisites
