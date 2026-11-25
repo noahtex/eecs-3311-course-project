@@ -39,6 +39,20 @@ See the [Stage 2 class, use-case and sequence diagrams](diagrams/stage2/README.m
 
 ## Standalone terminal JAR
 
+### Download the standalone CLI
+
+A prebuilt executable version of Planit's command-line agent is available from the [GitHub Releases page](https://github.com/noahtex/eecs-3311-course-project/releases/tag/v1.0.0-stage2).
+
+Download `ai-event-planner-1.0-SNAPSHOT-cli.jar` from the latest applicable release. Java 21 or newer is required; Maven is not needed to run the downloaded JAR.
+
+```powershell
+java -jar ai-event-planner-1.0-SNAPSHOT-cli.jar --help
+java -jar ai-event-planner-1.0-SNAPSHOT-cli.jar
+java -jar ai-event-planner-1.0-SNAPSHOT-cli.jar --llm gemini --input task.txt
+```
+
+The task-file example requires a previously saved event, a valid event ID in `task.txt`, and a locally configured Gemini API key. See the configuration and task-file instructions below.
+
 Build once from the `ai-event-planner` directory with JDK 21 or newer and Maven:
 
 ```powershell
@@ -72,7 +86,9 @@ File mode opens the same local JSON store as the GUI and interactive CLI, takes 
 
 ### 1. Install prerequisites
 
-Install a **JDK 21 or newer**, **Apache Maven** and **Git**, then open PowerShell. Set `JAVA_HOME` to the JDK installation and ensure Java, Maven and Git are on `PATH`. Verify that Maven uses the intended JDK:
+**To run the standalone CLI:** Install Java 21 or newer. Maven and Git are not required when using the prebuilt JAR from GitHub Releases.
+
+**To build from source or run the JavaFX GUI:** Install JDK 21 or newer, Apache Maven, and Git. Ensure the required tools are available on your system's PATH and that `JAVA_HOME` points to your JDK installation.
 
 ```powershell
 java -version
@@ -183,7 +199,7 @@ Continue with `team set <eventId>` and `tasks generate <eventId>`, or configure 
 
 ## Verification
 
-Latest verified ordinary offline run, **November 16, 2026 (America/Toronto)**: `mvn test -B -ntp` completed with **BUILD SUCCESS — 173 reported, 158 passed, 15 skipped, 0 failures, 0 errors**.
+Latest verified ordinary offline run, **November 16, 2026 (America/Toronto)**: `mvn test -B -ntp` completed with **BUILD SUCCESS — 175 reported, 160 passed, 15 skipped, 0 failures, 0 errors**.
 
 The skips were 14 opt-in JavaFX desktop tests and one opt-in live Gemini test. Injected model/provider responses were used; **no live Gemini or Places tests were run in that execution**. This was an incremental test run, not a clean package or verification of every GUI interaction. See [final report evidence](FINAL_REPORT_EVIDENCE.md) and the [integration audit](PLANIT_FINAL_INTEGRATION_AUDIT.md) for scope and historical desktop results.
 
@@ -204,7 +220,7 @@ The [demonstration guide](DEMONSTRATION_GUIDE.md) documents commands and workflo
 
 ## Documentation and submission
 
-- **Final report: TODO — add `stage2-report.pdf` and link it here.** This file is not present in the repository.
+- **Final report: [Stage 2 Implementation Report](STAGE2_REPORT.pdf)**
 - [Feature mappings, test/commit evidence and submission checklist](FINAL_REPORT_EVIDENCE.md) · [Integration audit](PLANIT_FINAL_INTEGRATION_AUDIT.md)
 - [Stage 2 UML index: editable sources, SVG and PNG](diagrams/stage2/README.md) · [UML verification](UML_VERIFICATION.md) · [Stage 1 specification/design](STAGE1_REPORT.md)
 - Detailed workflows: [F02 blueprint approval](F02_BLUEPRINT_SELECTION_GUIDE.md), [F03–F04 tasks/scheduling](F03_F04_GUIDE.md), [F05–F06 budget/venues](F05_F06_GUIDE.md), [F07–F10 advanced planning](MILESTONE4_GUIDE.md)
